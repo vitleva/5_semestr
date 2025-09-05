@@ -2,41 +2,89 @@ from flask import Flask, url_for, request, redirect
 import datetime
 app = Flask(__name__)
 
+# список логов
+access_log = []
+
 @app.errorhandler(404)
 def not_found(err):
     path = url_for("static", filename="404.jpg")
+    user_ip = request.remote_addr
+    access_time = str(datetime.datetime.now())
+    requested_url = request.url
+
+    # добавляем запись в журнал
+    access_log.append(f"[{access_time}] пользователь {user_ip} зашёл на адрес: {requested_url}")
+
+    log_html = "<ul>"
+    for entry in reversed(access_log):  # последние записи сверху
+        log_html += f"<li>{entry}</li>"
+    log_html += "</ul>"
+
     return '''
 <!doctype html>
 <html>
     <head>
+        <meta charset="utf-8">
+        <title>404 Not Found</title>
         <style>
             body {
                 font-family: Arial, sans-serif;
-                text-align: center;
                 background: #f0f4f8;
                 color: #333;
                 margin: 0;
-                padding: 0;
+                padding: 20px;
+                text-align: center;
             }
             h1 {
-                margin-top: 50px;
-                font-size: 2em;
+                margin-top: 20px;
                 color: #c0392b;
             }
             img {
-                margin-top: 30px;
+                margin-top: 20px;
                 max-width: 50%;
                 height: auto;
                 border-radius: 10px;
-                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.2);
             }
+            .info {
+                margin: 20px 0;
+                font-size: 1.1em;
+            }
+            .log {
+                margin-top: 30px;
+                text-align: left;
+                display: inline-block;
+                max-width: 90%;
+                background: #fff;
+                padding: 15px;
+                border-radius: 10px;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            }
+            .log ul { padding-left: 20px; }
+            .log li { margin-bottom: 5px; }
+            a {
+                color: #3a6ea5;
+                font-weight: bold;
+                text-decoration: none;
+            }
+            a:hover { text-decoration: underline; }
         </style>
     </head>
     <body>
         <h1>нет такой страницы...</h1>
         <img src="''' + path + '''">
+        <div class="info">
+            Ваш IP: '''+str(user_ip)+'''<br>
+            Дата доступа: '''+access_time+'''<br>
+            <a href="/">На главную</a>
+        </div>
+        <div class="log">
+            <h2>Журнал посещений</h2>
+            '''+log_html+'''
+        </div>
     </body>
-</html>''', 404
+</html>
+''', 404
 
 @app.route("/index")
 @app.route("/")

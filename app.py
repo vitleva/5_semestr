@@ -6,7 +6,37 @@ app = Flask(__name__)
 def not_found(err):
     return "нет такой страницы", 404
 
+@app.route("/index")
 @app.route("/")
+def index():
+    return '''
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>НГТУ, ФБ, Лабораторные работы</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f0f4f8; }
+            header { background: #3a6ea5; color: white; padding: 20px; text-align: center; }
+            nav { margin: 20px; text-align: center; }
+            nav a { text-decoration: none; color: #3a6ea5; font-weight: bold; padding: 10px; }
+            footer { background: #e0e0e0; text-align: center; padding: 10px; position: fixed; bottom: 0; width: 100%; }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>НГТУ, ФБ, WEB-программирование, часть 2. Список лабораторных</h1>
+        </header>
+        <nav>
+            <a href="/lab1">Первая лабораторная</a>
+        </nav>
+        <footer>
+            Витлева Анастасия Александровна, ФБИ-31, 3 курс, 2025
+        </footer>
+    </body>
+</html>
+'''
+
 @app.route("/lab1/web")
 def web():
     return """<!DOCTYPE html>

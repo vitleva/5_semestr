@@ -16,10 +16,10 @@ def index():
         <meta charset="utf-8">
         <title>НГТУ, ФБ, Лабораторные работы</title>
         <style>
-            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f0f4f8; }
-            header { background: #3a6ea5; color: white; padding: 20px; text-align: center; }
-            nav { margin: 20px; text-align: center; }
-            nav a { text-decoration: none; color: #3a6ea5; font-weight: bold; padding: 10px; }
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f0f4f8; text-align:center}
+            header { background: #3a6ea5; color: white; padding: 20px; text-align: center; margin: 20px;}
+            a { color: #3a6ea5; font-weight: bold;}
+            a:hover { text-decoration: underline;}
             footer { background: #e0e0e0; text-align: center; padding: 10px; position: fixed; bottom: 0; width: 100%; }
         </style>
     </head>
@@ -36,6 +36,28 @@ def index():
     </body>
 </html>
 '''
+
+@app.route("/lab1")
+def lab1():
+    return '''
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Лабораторная 1</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; color: #333; line-height: 1.6; }
+            a { color: #3a6ea5; font-weight: bold; }
+            a:hover { text-decoration: underline; }
+        </style>
+    </head>
+    <body>
+        <p>Flask — фреймворк для создания веб-приложений на языке программирования Python, использующий набор инструментов Werkzeug, а также шаблонизатор Jinja2. Относится к категории так называемых микрофреймворков — минималистичных каркасов веб-приложений, сознательно предоставляющих лишь самые базовые возможности.</p>
+        <p><a href="/">На главную</a></p>
+    </body>
+</html>
+'''
+
 
 @app.route("/lab1/web")
 def web():

@@ -164,7 +164,10 @@ def image():
         <h1>Макак</h1>
         <img src="''' + path + '''">
     </body>
-</html>'''
+</html>''', 200, {
+        'Content-Language': 'ru',
+        'X-Author': 'Vitleva A.A.',    
+        'X-Framework': 'Flask'}
 
 count = 0
 @app.route('/lab1/counter')

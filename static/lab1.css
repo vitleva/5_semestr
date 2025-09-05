@@ -1,0 +1,34 @@
+/* style.css */
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column; /* чтобы заголовок был над картинкой */
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #f0f4f8; /* мягкий фон */
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+h1 {
+    color: #333;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+}
+
+img {
+    max-width: 80%;
+    height: auto;
+    border-radius: 12px; /* скруглённые края */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* лёгкая тень */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+img:hover {
+    transform: scale(1.05); /* лёгкое увеличение при наведении */
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+

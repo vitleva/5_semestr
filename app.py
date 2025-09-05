@@ -115,8 +115,30 @@ def lab1():
         </style>
     </head>
     <body>
-        <p>Flask — фреймворк для создания веб-приложений на языке программирования Python, использующий набор инструментов Werkzeug, а также шаблонизатор Jinja2. Относится к категории так называемых микрофреймворков — минималистичных каркасов веб-приложений, сознательно предоставляющих лишь самые базовые возможности.</p>
+        <p>Flask — фреймворк для создания веб-приложений на языке программирования Python, использующий набор 
+        инструментов Werkzeug, а также шаблонизатор Jinja2. Относится к категории так называемых микрофреймворков 
+        — минималистичных каркасов веб-приложений, сознательно предоставляющих лишь самые базовые возможности.</p>
         <p><a href="/">На главную</a></p>
+
+        <h2>Список роутов</h2>
+        <ul>
+            <li><a href="/index">/index</a></li>
+            <li><a href="/">/</a></li>
+            <li><a href="/lab1/web">/web</a></li>
+            <li><a href="/lab1/author">/author</a></li>
+            <li><a href="/lab1/image">/image</a></li>
+            <li><a href="/lab1/counter">/counter</a></li>
+            <li><a href="/lab1/counter/reset">/counter/reset</a></li>
+            <li><a href="/lab1/info">/info</a></li>
+            <li><a href="/lab1/created">/created</a></li>
+            <li><a href="/lab1/error/400">/error/400</a></li>
+            <li><a href="/lab1/error/401">/error/401</a></li>
+            <li><a href="/lab1/error/402">/error/402</a></li>
+            <li><a href="/lab1/error/403">/error/403</a></li>
+            <li><a href="/lab1/error/405">/error/405</a></li>
+            <li><a href="/lab1/error/418">/error/418</a></li>
+            <li><a href="/lab1/cause_error">/cause_error</a></li>
+        </ul>
     </body>
 </html>
 '''

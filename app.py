@@ -153,3 +153,28 @@ def reset_counter():
     </body>
 </html>
 '''
+
+@app.route("/lab1/error/400")
+def error_400():
+    return "неверный запрос", 400
+
+@app.route("/lab1/error/401")
+def error_401():
+    return "требуется авторизация", 401
+
+@app.route("/lab1/error/402")
+def error_402():
+    return "требуется оплата", 402
+
+@app.route("/lab1/error/403")
+def error_403():
+    return "доступ запрещён", 403
+
+@app.route("/lab1/error/405")
+def error_405():
+    return "метод не разрешён", 405
+
+@app.route("/lab1/error/418")
+def error_418():
+    return "я чайник", 418
+

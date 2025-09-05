@@ -48,11 +48,33 @@ def index():
         <meta charset="utf-8">
         <title>НГТУ, ФБ, Лабораторные работы</title>
         <style>
-            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f0f4f8; text-align:center}
-            header { background: #3a6ea5; color: white; padding: 20px; text-align: center; margin: 20px;}
-            a { color: #3a6ea5; font-weight: bold;}
-            a:hover { text-decoration: underline;}
-            footer { background: #e0e0e0; text-align: center; padding: 10px; position: fixed; bottom: 0; width: 100%; }
+            body { 
+                font-family: Arial, sans-serif; 
+                margin: 0; 
+                padding: 0; 
+                background: #f0f4f8; 
+                text-align:center
+            }
+            header { 
+                background: #3a6ea5; 
+                color: white; 
+                padding: 20px; 
+                text-align: center; 
+                margin: 20px
+            }
+            a { 
+                color: #3a6ea5; 
+                font-weight: bold
+            }
+            a:hover { text-decoration: underline}
+            footer { 
+                background: #e0e0e0; 
+                text-align: center; 
+                padding: 10px; 
+                position: fixed; 
+                bottom: 0; 
+                width: 100%
+            }
         </style>
     </head>
     <body>
@@ -78,9 +100,18 @@ def lab1():
         <meta charset="utf-8">
         <title>Лабораторная 1</title>
         <style>
-            body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; color: #333; line-height: 1.6; }
-            a { color: #3a6ea5; font-weight: bold; }
-            a:hover { text-decoration: underline; }
+            body { 
+                font-family: Arial, sans-serif; 
+                margin: 20px; 
+                background: #f9f9f9; 
+                color: #333; 
+                line-height: 1.6
+            }
+            a { 
+                color: #3a6ea5; 
+                font-weight: bold
+            }
+            a:hover { text-decoration: underline}
         </style>
     </head>
     <body>
@@ -209,4 +240,38 @@ def error_405():
 @app.route("/lab1/error/418")
 def error_418():
     return "я чайник", 418
+
+# Роут, который вызывает ошибку
+@app.route("/lab1/cause_error")
+def cause_error():
+    # Пример: деление на ноль
+    x = 1 / 0
+    return str(x)
+
+# Обработчик ошибки 500
+@app.errorhandler(500)
+def internal_error(err):
+    return '''
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Ошибка сервера</title>
+        <style>
+            body {
+                text-align: center;
+                background: #f8d7da;
+                color: #721c24;
+                margin: 0;
+                padding: 50px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Внутренняя ошибка сервера (500)</h1>
+        <p>Произошла непредвиденная ошибка на сервере</p>
+    </body>
+</html>
+''', 500
+
 

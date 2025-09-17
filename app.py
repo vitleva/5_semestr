@@ -1,4 +1,4 @@
-from flask import Flask, url_for, request, redirect
+from flask import Flask, url_for, request, redirect, abort
 import datetime
 app = Flask(__name__)
 
@@ -355,3 +355,11 @@ def a():
 def a2():
     return 'со слэшем'
 
+flower_list = ("карасик", "вобла", "кальмар", "форель", "семга")
+
+@app.route('/lab2/flowers/<int:flower_id>')
+def flowers(flower_id):
+    if flower_id >= len(flower_list):
+        abort(404)
+    else:
+        return "пивной букет из:" + flower_list[flower_id]

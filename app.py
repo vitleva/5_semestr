@@ -498,6 +498,35 @@ books = [
 def show_books():
     return render_template('books.html', books=books)
 
+energy_drinks = [
+    {"name": "Red Bull", "desc": "Классический энергетик из Австрии, один из самых популярных в мире.", "image": "redbull.jpg"},
+    {"name": "Monster Energy", "desc": "Американский энергетик с большим количеством сахара и кофеина.", "image": "monster.jpg"},
+    {"name": "Burn", "desc": "Энергетический напиток от Coca-Cola, часто встречается в России.", "image": "burn.jpg"},
+    {"name": "Adrenaline Rush", "desc": "Популярный российский энергетик с разными вкусами.", "image": "adrenaline.jpg"},
+    {"name": "Drive Me", "desc": "Бюджетный энергетик, часто встречается в магазинах РФ.", "image": "drive.jpg"},
+    {"name": "Gorilla", "desc": "Российский энергетик, спонсор киберспорта и рэп-культуры.", "image": "gorilla.jpg"},
+    {"name": "Flash Up", "desc": "Недорогой энергетик, продаётся в дискаунтерах.", "image": "flash.jpg"},
+    {"name": "Effect", "desc": "Немецкий энергетический напиток с мягким вкусом.", "image": "effect.jpg"},
+    {"name": "Rockstar Energy", "desc": "Американский энергетик с десятками вкусовых вариаций.", "image": "rockstar.jpg"},
+    {"name": "Crazy Wolf", "desc": "Европейский энергетик, недорогой вариант для студентов.", "image": "crazywolf.jpg"},
+    {"name": "Tornado Energy", "desc": "Российский бренд энергетиков, часто встречается в супермаркетах.", "image": "tornado.jpg"},
+    {"name": "Black Monster", "desc": "Вариация Monster в чёрной банке, более крепкий вкус.", "image": "blackmonster.jpg"},
+    {"name": "Hype Energy", "desc": "Энергетик из Великобритании, ориентирован на спорт и музыку.", "image": "hype.jpg"},
+    {"name": "LitEnergy", "desc": "Российский энергетик, выпускаемый блогером Михаилом Литивном.", "image": "lit.jpg"},
+    {"name": "Celsius", "desc": "Функциональный энергетик для ЗОЖ, без сахара.", "image": "celsius.jpg"},
+    {"name": "Mother Energy", "desc": "Популярный бренд в Австралии и Новой Зеландии.", "image": "mother.jpg"},
+    {"name": "V Energy", "desc": "Новозеландский энергетик с мягким вкусом и зелёной банкой.", "image": "v.jpg"},
+    {"name": "Bang Energy", "desc": "Американский энергетик с аминокислотами и витаминами.", "image": "bang.jpg"},
+    {"name": "Revo Energy", "desc": "Энергетик, ориентированный на молодёжь, яркий дизайн банок.", "image": "revo.jpg"},
+    {"name": "E-ON", "desc": "Российский энергетик от Coca-Cola с необычными вкусами.", "image": "eon.jpg"},
+]
+
+@app.route('/lab2/energy')
+def energy():
+    return render_template("energy.html", drinks=energy_drinks)
+
+
+
 
 
 

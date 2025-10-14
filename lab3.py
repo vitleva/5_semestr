@@ -148,3 +148,12 @@ def train_ticket():
             return render_template('lab3/train_ticket_result.html', data=data)
 
     return render_template('lab3/train_ticket.html', errors=errors, data=data)
+
+@lab3.route('/lab3/settings/clear')
+def clear_settings():
+    resp = make_response(redirect('/lab3/settings'))
+    resp.set_cookie('color', '', expires=0)
+    resp.set_cookie('bg_color', '', expires=0)
+    resp.set_cookie('font_size', '', expires=0)
+    resp.set_cookie('font_family', '', expires=0)
+    return resp

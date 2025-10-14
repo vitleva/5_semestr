@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block lab %}Поиск товаров{% endblock %}
+
+{% block main %}
+    <h1 style="text-align:center;">Каталог товаров</h1>
+
+    <form method="get" action="/lab3/products" style="max-width:400px;margin:auto;padding:20px;border:1px solid #ccc;border-radius:10px;background-color:#f9f9f9;">
+        <div style="margin-bottom:10px;">
+            <label>Мин. цена:</label>
+            <input type="number" name="min_price" value="{{ min_price }}" placeholder="{{ placeholder_min }}" style="width:100%;padding:8px;">
+        </div>
+        <div style="margin-bottom:10px;">
+            <label>Макс. цена:</label>
+            <input type="number" name="max_price" value="{{ max_price }}" placeholder="{{ placeholder_max }}" style="width:100%;padding:8px;">
+        </div>
+        <div style="text-align:center;">
+            <button type="submit" style="background-color:#4CAF50;color:white;padding:8px 16px;border:none;border-radius:5px;">Искать</button>
+            <a href="/lab3/products/reset" style="display:inline-block;margin-left:10px;background-color:#d33;color:white;padding:8px 16px;border-radius:5px;text-decoration:none;">Сброс</a>
+        </div>
+    </form>
+
+    <h3 style="text-align:center;margin-top:20px;">Найдено товаров: {{ count }}</h3>
+
+    {% if count == 0 %}
+    <p style="text-align:center;color:red;">Не найдено ни одного товара</p>
+    {% else %}
+    <table style="margin:auto;border-collapse:collapse;width:80%;">
+        <tr style="background-color:#f0f0f0;">
+            <th style="border:1px solid #ccc;padding:8px;">Название</th>
+            <th style="border:1px solid #ccc;padding:8px;">Цена</th>
+            <th style="border:1px solid #ccc;padding:8px;">Бренд</th>
+            <th style="border:1px solid #ccc;padding:8px;">Цвет</th>
+        </tr>
+        {% for p in products %}
+        <tr>
+            <td style="border:1px solid #ccc;padding:8px;">{{ p.name }}</td>
+            <td style="border:1px solid #ccc;padding:8px;">{{ p.price }}</td>
+            <td style="border:1px solid #ccc;padding:8px;">{{ p.brand }}</td>
+            <td style="border:1px solid #ccc;padding:8px;">{{ p.color }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    <div style="text-align:center;margin-top:20px;">
+        <a href="/lab3" style="color:#2196F3;">Вернуться на главную</a>
+    </div>
+{% endblock %}

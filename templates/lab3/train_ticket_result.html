@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block lab %}Ваш билет{% endblock %}
+
+{% block main %}
+<h1 style="text-align:center;color:#4CAF50;">Ваш билет</h1>
+
+<div style="max-width:500px;margin:auto;padding:20px;border:2px solid #4CAF50;border-radius:10px;background-color:#f0fff0;">
+    <p><strong>ФИО пассажира:</strong> {{ data.fio }}</p>
+    <p><strong>Возраст:</strong> {{ data.age }} {% if data.age < 18 %}(<span style="color:red">{{ data.ticket_type }}</span>){% endif %}</p>
+    <p><strong>Полка:</strong> {{ data.berth }}</p>
+    <p><strong>С бельём:</strong> {{ "Да" if data.linen else "Нет" }}</p>
+    <p><strong>С багажом:</strong> {{ "Да" if data.baggage else "Нет" }}</p>
+    <p><strong>Пункт выезда:</strong> {{ data.from_city }}</p>
+    <p><strong>Пункт назначения:</strong> {{ data.to_city }}</p>
+    <p><strong>Дата поездки:</strong> {{ data.date }}</p>
+    <p><strong>Страховка:</strong> {{ "Да" if data.insurance else "Нет" }}</p>
+    <h2 style="text-align:center;">Цена: {{ data.price }} ₽</h2>
+</div>
+
+<div style="text-align:center;margin-top:20px;">
+    <a href="/lab3/train_ticket" style="background-color:#2196F3;color:white;padding:10px 20px;border-radius:5px;text-decoration:none;">Сделать новый билет</a>
+</div>
+{% endblock %}

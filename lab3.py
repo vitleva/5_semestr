@@ -94,3 +94,57 @@ def settings():
                                        font_size=font_size, 
                                        font_family=font_family))
     return resp
+
+@lab3.route('/lab3/train_ticket')
+def train_ticket():
+    errors = {}
+    data = {}
+
+    data['fio'] = request.args.get('fio', '').strip()
+    data['berth'] = request.args.get('berth', '')
+    data['linen'] = request.args.get('linen') == 'on'
+    data['baggage'] = request.args.get('baggage') == 'on'
+    data['age'] = request.args.get('age', '').strip()
+    data['from_city'] = request.args.get('from_city', '').strip()
+    data['to_city'] = request.args.get('to_city', '').strip()
+    data['date'] = request.args.get('date', '').strip()
+    data['insurance'] = request.args.get('insurance') == 'on'
+
+    if request.args:
+        if not data['fio']:
+            errors['fio'] = 'Введите ФИО'
+        if not data['berth']:
+            errors['berth'] = 'Выберите полку'
+        if not data['age']:
+            errors['age'] = 'Введите возраст'
+        else:
+            try:
+                age_val = int(data['age'])
+                if age_val < 1 or age_val > 120:
+                    errors['age'] = 'Возраст должен быть от 1 до 120'
+                data['age'] = age_val
+            except ValueError:
+                errors['age'] = 'Возраст должен быть числом'
+        if not data['from_city']:
+            errors['from_city'] = 'Введите пункт выезда'
+        if not data['to_city']:
+            errors['to_city'] = 'Введите пункт назначения'
+        if not data['date']:
+            errors['date'] = 'Выберите дату поездки'
+
+        if not errors:
+            price = 1000 if data['age'] >= 18 else 700
+            if data['berth'] in ['нижняя', 'нижняя боковая']:
+                price += 100
+            if data['linen']:
+                price += 75
+            if data['baggage']:
+                price += 250
+            if data['insurance']:
+                price += 150
+            data['price'] = price
+            data['ticket_type'] = 'Детский билет' if data['age'] < 18 else 'Взрослый билет'
+
+            return render_template('lab3/train_ticket_result.html', data=data)
+
+    return render_template('lab3/train_ticket.html', errors=errors, data=data)

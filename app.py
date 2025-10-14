@@ -13,7 +13,7 @@ access_log = []
 
 @app.errorhandler(404)
 def not_found(err):
-    path = url_for("static", filename="404.jpg")
+    path = url_for("static", filename="lab1/404.jpg")
     user_ip = request.remote_addr
     access_time = str(datetime.datetime.now())
     requested_url = request.url

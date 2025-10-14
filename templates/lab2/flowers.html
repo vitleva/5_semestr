@@ -9,11 +9,11 @@
     <ol>
     {% for f in flowers %}
         <li>{{ f.name }} - {{ f.price }} руб. 
-            <a href="{{ url_for('del_flower', flower_id=loop.index0) }}">удалить</a>
+            <a href="{{ url_for('lab2.del_flower', flower_id=loop.index0) }}">удалить</a>
         </li>
     {% endfor %}
     </ol>
-    <p><a href="{{ url_for('clear_flowers') }}">Удалить все цветы</a></p>
+    <p><a href="{{ url_for('lab2.clear_flowers') }}">Удалить все цветы</a></p>
 {% else %}
     <p>Список пуст.</p>
 {% endif %}

@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Витлева Анастасия. {% block lab %}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon-64x64.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='lab1/main.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='lab2/favicon.ico') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='lab2/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='lab2/favicon-64x64.png') }}">
     <style>
         body, main {
             color: {{ request.cookies.get('color', '#000000') }};

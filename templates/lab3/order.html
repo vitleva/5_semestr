@@ -3,30 +3,33 @@
 {% block lab %}Лабораторная работа 3{% endblock %}
 
 {% block main %}
-<h1 style="color:#333;text-align:center;">Заказ напитка</h1>
+    <h1 style="color:#333;text-align:center;">Заказ напитка</h1>
 
-<form action="/lab3/pay" style="max-width:400px;margin:auto;padding:20px;border:1px solid #ccc;border-radius:10px;background-color:#f9f9f9;">
-    <h3>Выберите напиток:</h3>
-    <label style="display:block;margin:5px 0;">
-        <input type="radio" value="coffee" name="drink" checked> Кофе — <strong>120₽</strong>
-    </label>
-    <label style="display:block;margin:5px 0;">
-        <input type="radio" value="black-tea" name="drink"> Черный чай — <strong>80₽</strong>
-    </label>
-    <label style="display:block;margin:5px 0;">
-        <input type="radio" value="green-tea" name="drink"> Зеленый чай — <strong>70₽</strong>
-    </label>
+    <form action="/lab3/pay" style="max-width:400px;margin:auto;padding:20px;border:1px solid #ccc;border-radius:10px;background-color:#f9f9f9;">
+        <h3>Выберите напиток:</h3>
+        <label style="display:block;margin:5px 0;">
+            <input type="radio" value="coffee" name="drink" checked> Кофе — <strong>120₽</strong>
+        </label>
+        <label style="display:block;margin:5px 0;">
+            <input type="radio" value="black-tea" name="drink"> Черный чай — <strong>80₽</strong>
+        </label>
+        <label style="display:block;margin:5px 0;">
+            <input type="radio" value="green-tea" name="drink"> Зеленый чай — <strong>70₽</strong>
+        </label>
 
-    <h3>Добавки:</h3>
-    <label style="display:block;margin:5px 0;">
-        <input type="checkbox" name="milk"> Молоко — <strong>+30₽</strong>
-    </label>
-    <label style="display:block;margin:5px 0;">
-        <input type="checkbox" name="sugar"> Сахар — <strong>+10₽</strong>
-    </label>
+        <h3>Добавки:</h3>
+        <label style="display:block;margin:5px 0;">
+            <input type="checkbox" name="milk"> Молоко — <strong>+30₽</strong>
+        </label>
+        <label style="display:block;margin:5px 0;">
+            <input type="checkbox" name="sugar"> Сахар — <strong>+10₽</strong>
+        </label>
 
-    <div style="text-align:center;margin-top:15px;">
-        <button type="submit" style="background-color:#4CAF50;color:white;padding:10px 20px;border:none;border-radius:5px;">Посчитать цену</button>
-    </div>
-</form>
+        <div style="text-align:center;margin-top:15px;">
+            <button type="submit" style="background-color:#4CAF50;color:white;padding:10px 20px;border:none;border-radius:5px;">Посчитать цену</button>
+        </div>
+        <div style="text-align:center;margin-top:15px;">
+            <a href="/lab3">Вернуться на главную</a>
+        </div>
+    </form>
 {% endblock %}

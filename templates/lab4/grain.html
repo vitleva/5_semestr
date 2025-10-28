@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block lab %}Заказ зерна{% endblock %}
+
+{% block main %}
+    <h1>Заказ зерна</h1>
+    <p>Выберите тип зерна и укажите вес (в тоннах):</p>
+
+    <form method="post" class="grain-form">
+        <label for="grain">Тип зерна:</label>
+        <select name="grain" id="grain">
+            {% for name, price in prices.items() %}
+                <option value="{{ name }}" {% if grain_type == name %}selected{% endif %}>
+                    {{ name|capitalize }} — {{ price|int }} руб/т
+                </option>
+            {% endfor %}
+        </select>
+
+        <label for="weight">Вес (т):</label>
+        <input type="number" id="weight" name="weight" step="0.1" value="{{ weight or '' }}">
+
+        <button type="submit">Рассчитать</button>
+    </form>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% elif total is defined %}
+        <div class="result">
+            <p>Заказ успешно сформирован!</p>
+            <p>Вы заказали: <strong>{{ grain_type }}</strong></p>
+            <p>Вес: <strong>{{ weight }} т</strong></p>
+            <p>Сумма к оплате: <strong>{{ "{:.0f}".format(total) }} руб</strong></p>
+            {% if discount_text %}
+                <p class="discount">{{ discount_text }}</p>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <style>
+        .grain-form {
+            background: #fff7e6;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            width: 300px;
+            gap: 10px;
+        }
+        .grain-form label {
+            font-weight: 600;
+        }
+        .grain-form select, .grain-form input {
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        .grain-form button {
+            background-color: #ffb700;
+            color: black;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .grain-form button:hover {
+            background-color: #ff9900;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        .result {
+            background-color: #e6ffe6;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
+            font-size: 18px;
+        }
+        .discount {
+            color: #008000;
+            font-style: italic;
+            margin-top: 10px;
+        }
+    </style>
+{% endblock %}

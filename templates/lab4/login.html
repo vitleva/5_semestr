@@ -1,34 +1,86 @@
 {% extends "base.html" %}
 
-{% block lab %}Умножение{% endblock %}
+{% block lab %}Авторизация{% endblock %}
 
 {% block main %}
     {% if authorized %} 
-        <h1>Добро пожаловать, {{ login }}!</h1>
+        <h1>
+            {% if name %}
+                Добро пожаловать, {{ name }}!
+            {% else %}
+                Добро пожаловать, {{ login }}!
+            {% endif %}
+        </h1>
         <div>
             <form action="/lab4/logout" method="post">
-                <button>Выход</button>
+                <button class="logout-btn">Выход</button>
             </form>
         </div>
     {% else %}   
         <h1>Вход</h1>
         <h2>Пожалуйста, авторизуйтесь</h2>
-        <form method="post">
+        <form method="post" class="login-form">
             <div>
                 <label for="login">Пользователь:</label>
-                <input type="text" id="login" name="login">
+                <input type="text" id="login" name="login" value="{{ login }}">
             </div>
             <div>
-                <label for="password">Пароль</label>
-                <input type="password" id="password" name="password">
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" name="password" value="">
             </div>
-            <div>
-                {{ error }}
-            </div>
+            {% if error %}
+                <p class="error-msg">{{ error }}</p>
+            {% endif %}
             <div>
                 <button type="submit">Войти</button>
                 <button type="reset">Отмена</button>
             </div>
         </form>
     {% endif %}
+
+    <style>
+        .login-form {
+            background: #f8f9fc;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 350px;
+            margin-top: 20px;
+        }
+        .login-form input {
+            margin: 6px 0;
+            padding: 6px;
+            width: 95%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .login-form button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+        .login-form button:hover {
+            background-color: #0056b3;
+        }
+        .logout-btn {
+            background: #ff4d4d;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+        }
+        .logout-btn:hover {
+            background: #cc0000;
+        }
+        .error-msg {
+            color: #d60000;
+            font-weight: bold;
+            font-style: italic;
+            margin: 10px 0;
+        }
+    </style>
 {% endblock %}

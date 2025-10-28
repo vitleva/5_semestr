@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block lab %}Список пользователей{% endblock %}
+
+{% block main %}
+    <h1>Список пользователей</h1>
+
+    <table class="users-table">
+        <tr>
+            <th>Имя</th>
+            <th>Логин</th>
+            <th>Пол</th>
+            <th>Действия</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.name }}</td>
+            <td>{{ user.login }}</td>
+            <td>{{ user.gender }}</td>
+            <td>
+                {% if user.login == current_user %}
+                    <form action="/lab4/edit/{{ user.login }}" method="get" style="display:inline;">
+                        <button class="edit-btn">Редактировать</button>
+                    </form>
+                    <form action="/lab4/delete/{{ user.login }}" method="post" style="display:inline;">
+                        <button class="del-btn">Удалить</button>
+                    </form>
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <div style="margin-top: 20px;">
+        <a href="/lab4" class="back-btn">← Назад к лабораторной 4</a>
+    </div>
+
+    <style>
+        .back-btn {
+            display: inline-block;
+            margin-top: 10px;
+            background-color: #ddd;
+            color: #333;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .back-btn:hover {
+            background-color: #bbb;
+        }
+        .users-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 15px;
+        }
+        .users-table th, .users-table td {
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+        }
+        .edit-btn {
+            background-color: #ffc107;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .del-btn {
+            background-color: #dc3545;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white;
+        }
+    </style>
+{% endblock %}

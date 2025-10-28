@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block lab %}Редактирование профиля{% endblock %}
+
+{% block main %}
+    <h1>Редактирование профиля</h1>
+
+    <form method="post" class="edit-form">
+        <label>Логин:</label>
+        <input type="text" name="login" value="{{ user.login }}" required>
+
+        <label>Имя:</label>
+        <input type="text" name="name" value="{{ user.name }}" required>
+
+        <label>Пол:</label>
+        <select name="gender">
+            <option value="М" {% if user.gender == 'М' %}selected{% endif %}>Мужской</option>
+            <option value="Ж" {% if user.gender == 'Ж' %}selected{% endif %}>Женский</option>
+        </select>
+
+        <label>Новый пароль:</label>
+        <input type="password" name="password">
+
+        <label>Подтверждение пароля:</label>
+        <input type="password" name="confirm">
+
+        <button type="submit">Сохранить</button>
+    </form>
+
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+    <div style="margin-top: 20px;">
+        <a href="/lab4" class="back-btn">← Назад к лабораторной 4</a>
+    </div>
+    <style>
+        .back-btn {
+            display: inline-block;
+            margin-top: 10px;
+            background-color: #ddd;
+            color: #333;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .back-btn:hover {
+            background-color: #bbb;
+        }
+        .edit-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 300px;
+            background-color: #f3f8ff;
+            padding: 20px;
+            border-radius: 12px;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0069d9;
+        }
+    </style>
+{% endblock %}

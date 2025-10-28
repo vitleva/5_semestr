@@ -36,9 +36,42 @@
                 <button type="reset">Отмена</button>
             </div>
         </form>
+        <div style="margin-top: 10px;">
+            <a href="/lab4/register" class="reg-link">Зарегистрироваться</a>
+        </div>
     {% endif %}
+    <div style="margin-top: 20px;">
+        <a href="/lab4" class="back-btn">← Назад к лабораторной 4</a>
+    </div>
 
     <style>
+        .back-btn {
+            display: inline-block;
+            margin-top: 10px;
+            background-color: #ddd;
+            color: #333;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .back-btn:hover {
+            background-color: #bbb;
+        }
+        .reg-link {
+            display: inline-block;
+            margin-top: 8px;
+            background-color: #5e9cff;
+            color: white;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        .reg-link:hover {
+            background-color: #2b7cff;
+        }
         .login-form {
             background: #f8f9fc;
             padding: 20px;

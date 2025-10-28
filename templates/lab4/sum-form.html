@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block lab %}Суммирование{% endblock %}
+
+{% block main %}
+    <form method="post" action="/lab4/sum" class="math-form">
+        <h1>Суммирование</h1>
+        <input type="number" name="x1" placeholder="Число 1"> + 
+        <input type="number" name="x2" placeholder="Число 2">
+        <input type="submit" value="=">
+    </form>
+{% endblock %}

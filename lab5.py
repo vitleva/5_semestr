@@ -200,6 +200,8 @@ def list():
         return render_template('lab5/articles.html', articles=[], message=message, login=login_val)
     return render_template('lab5/articles.html', articles=articles, login=login_val)
 
+
+
 @lab5.route('/lab5/article/<int:article_id>/edit', methods=['GET', 'POST'])
 def edit_article(article_id):
     login_val = session.get('login')
@@ -320,3 +322,29 @@ def profile():
 
     db_close(conn, cur)
     return redirect('/lab5')
+
+@lab5.route('/lab5/favorite/<int:article_id>')
+def favorite(article_id):
+    login = session.get('login')
+
+    conn, cur = db_connect()
+
+    if current_app.config['DB_TYPE'] == 'postgres':
+        cur.execute("SELECT is_favorite FROM articles WHERE id=%s;", (article_id,))
+    else:
+        cur.execute("SELECT is_favorite FROM articles WHERE id=?;", (article_id,))
+    art = cur.fetchone()
+
+    if not art:
+        db_close(conn, cur)
+        return redirect('/lab5/list')
+
+    new_value = False if art["is_favorite"] in (1, '1', True) else True
+
+    if current_app.config['DB_TYPE'] == 'postgres':
+        cur.execute("UPDATE articles SET is_favorite=%s WHERE id=%s;", (new_value, article_id))
+    else:
+        cur.execute("UPDATE articles SET is_favorite=? WHERE id=?;", (new_value, article_id))
+
+    db_close(conn, cur)
+    return redirect('/lab5/list')

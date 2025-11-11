@@ -8,35 +8,117 @@
     {% if message %}
         <p>{{ message }}</p>
     {% endif %}
-    
+
+    <style>
+    .article-card {
+        border: 1px solid #ddd;
+        padding: 18px;
+        border-radius: 10px;
+        margin-bottom: 14px;
+        background: #fafafa;
+        position: relative;
+    }
+
+    .favorite-heart {
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        font-size: 26px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .favorite-heart.empty {
+        color: #bbb;
+    }
+
+    .favorite-heart.filled {
+        color: #e74c3c;
+    }
+
+    .favorite-heart:hover {
+        transform: scale(1.15);
+    }
+
+    /* кнопка редактирования */
+    .edit-btn {
+        display: inline-block;
+        padding: 6px 12px;
+        background: #4a76a8;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+    }
+    .edit-btn:hover {
+        background: #3b5f86;
+    }
+
+    /* кнопка удаления */
+    .delete-btn {
+        padding: 6px 12px;
+        background: #e74c3c;
+        border: none;
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+    .delete-btn:hover {
+        background: #cf3f30;
+    }
+    </style>
+
+
     {% for article in articles %}
-        <div class="article-card" style="border:1px solid #ddd;padding:12px;border-radius:8px;margin-bottom:12px;background:#fafafa;">
+        <div class="article-card">
+
+            {# СЕРДЕЧКО ИЗБРАННОГО #}
+            <a href="/lab5/favorite/{{ article['id'] }}"
+            class="favorite-heart 
+            {% if article['is_favorite'] in [1, '1', True] %}filled{% else %}empty{% endif %}">
+                {% if article['is_favorite'] in [1, '1', True] %}
+                    ♥
+                {% else %}
+                    ♡
+                {% endif %}
+            </a>
+
             <h2>
                 {{ article['title'] }}
-                {% if article['is_favorite'] in [1, '1', True] or article['is_favorite'] == True %}
-                    <sup>★</sup>
-                {% endif %}
             </h2>
+
             <div style="font-size:0.9em;color:#666;margin-bottom:8px;">
                 Автор: {{ article['author_name'] or article['author_login'] }} ({{ article['author_login'] }})
-                {% if article['is_public'] in [1, '1', True] or article['is_public'] == True %}
+                {% if article['is_public'] in [1, '1', True] %}
                     • публичная
                 {% else %}
                     • приватная
                 {% endif %}
             </div>
-            <blockquote style="margin:0 0 8px 0;">{{ article['article_text'] }}</blockquote>
+
+            <blockquote style="margin:0 0 8px 0;">
+                {{ article['article_text'] }}
+            </blockquote>
+
 
             {% if login == article['author_login'] %}
-                <div style="display:flex; gap:8px;">
-                    <a href="/lab5/article/{{ article['id'] }}/edit">Редактировать</a>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <a href="/lab5/article/{{ article['id'] }}/edit" class="edit-btn">
+                        Редактировать
+                    </a>
+
                     <form action="/lab5/article/{{ article['id'] }}/delete" method="post" style="display:inline;">
-                        <button type="submit" onclick="return confirm('Удалить статью?')">Удалить</button>
+                        <button type="submit" class="delete-btn" onclick="return confirm('Удалить статью?')">
+                            Удалить
+                        </button>
                     </form>
                 </div>
             {% endif %}
+
         </div>
     {% endfor %}
+
 {% endblock %}
+
 
 

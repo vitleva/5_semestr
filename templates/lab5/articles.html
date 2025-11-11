@@ -3,10 +3,38 @@
 {% block lab %}Лабораторная работа 5{% endblock %}
 
 {% block main %}
-    <h1>Статьи</h1>
-    
-    {% for article in articles %}
-        <h2>{{ article['title'] }}</h2>
-        <blockquote>{{ article['article_text'] }}</blockquote>
-    {% endfor %}
+    <h1 style="margin-bottom:20px;">Статьи</h1>
+
+    {% if not articles %}
+        <p style="padding: 15px; background: #fff8da; border-radius: 8px; border:1px solid #f0e2a4;">
+            У вас пока нет статей.
+        </p>
+    {% else %}
+        {% for article in articles %}
+            <div style="
+                background:#fafafa; 
+                border:1px solid #ddd; 
+                padding:20px; 
+                border-radius:8px; 
+                margin-bottom:20px;
+                box-shadow:0 2px 6px rgba(0,0,0,0.05);
+            ">
+                <h2 style="margin-top:0; color:#345;">{{ article['title'] }}</h2>
+                <blockquote style="font-style:italic; color:#555; margin:10px 0 20px 0;">
+                    {{ article['article_text'] }}
+                </blockquote>
+
+                <a href="/lab5/edit/{{ article['id'] }}" 
+                style="margin-right:10px; padding:8px 16px; background:#4a76a8; color:white; border-radius:5px; text-decoration:none; font-size:0.95em;">
+                Редактировать
+                </a>
+
+                <a href="/lab5/delete/{{ article['id'] }}" 
+                style="padding:8px 16px; background:#d9534f; color:white; border-radius:5px; text-decoration:none; font-size:0.95em;">
+                Удалить
+                </a>
+            </div>
+        {% endfor %}
+    {% endif %}
 {% endblock %}
+

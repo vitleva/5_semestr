@@ -3,8 +3,26 @@
 {% block lab %}Лабораторная работа 5{% endblock %}
 
 {% block main %}
-    <h1>Добро пожаловать! Вы успешно зарегистировались!</h1>
-    <div style="margin-top: 20px;">
+    <h1 style="color:#2e7d32;">Добро пожаловать! Вы успешно зарегистрировались!</h1>
+
+    <div style="
+        padding:15px; 
+        background:#e9f7ef; 
+        border:1px solid #c8e6c9; 
+        border-radius:8px; 
+        margin-top:20px;
+    ">
+        Аккаунт создан. Теперь вы можете войти.
+    </div>
+
+    <div style="margin-top:20px;">
+        <a href="/lab5/login" 
+        style="padding:10px 20px; background:#4a76a8; color:white; border-radius:6px; text-decoration:none;">
+        Войти
+        </a>
+    </div>
+
+    <div style="margin-top:20px;">
         <a href="/lab5" class="back-btn">← Назад к лабораторной 5</a>
     </div>
 {% endblock %}

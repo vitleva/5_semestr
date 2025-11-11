@@ -3,8 +3,26 @@
 {% block lab %}Лабораторная работа 5{% endblock %}
 
 {% block main %}
-    <h1>Добро пожаловать! Вы успешно вошли!</h1>
-    <div style="margin-top: 20px;">
+    <h1 style="color:#2e7d32;">Добро пожаловать! Вы успешно вошли!</h1>
+
+    <div style="
+        padding:15px; 
+        background:#e0f4ff; 
+        border:1px solid #b6e0fb; 
+        border-radius:8px; 
+        margin-top:20px;
+    ">
+        Приятной работы со статьями.
+    </div>
+
+    <div style="margin-top:20px;">
+        <a href="/lab5/list"
+        style="padding:10px 20px; background:#4a76a8; color:white; border-radius:6px; text-decoration:none;">
+        Перейти к статьям
+        </a>
+    </div>
+
+    <div style="margin-top:20px;">
         <a href="/lab5" class="back-btn">← Назад к лабораторной 5</a>
     </div>
 {% endblock %}

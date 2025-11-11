@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block lab %}Лабораторная работа 5{% endblock %}
+
+{% block main %}
+    <h1>Зарегистрированные пользователи</h1>
+    <ul>
+    {% for u in users %}
+        <li><strong>{{ u['login'] }}</strong> — {{ u['name'] or '(имя не указано)' }}</li>
+    {% endfor %}
+    </ul>
+    <div style="margin-top: 20px;">
+        <a href="/lab5" class="back-btn">← Назад</a>
+    </div>
+{% endblock %}

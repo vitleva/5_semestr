@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block lab %}Лабораторная работа 5{% endblock %}
+
+{% block main %}
+    <h1>Профиль</h1>
+
+    <form method="post">
+        <div>
+            <label>Имя: <input type="text" name="name" value="{{ user['name'] }}"></label>
+        </div>
+
+        <h3>Сменить пароль</h3>
+        <div>
+            <label>Новый пароль: <input type="password" name="password"></label>
+        </div>
+        <div>
+            <label>Подтвердите пароль: <input type="password" name="confirm"></label>
+        </div>
+
+        <div>
+            <button type="submit">Сохранить</button>
+        </div>
+    </form>
+
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+
+    <div style="margin-top: 20px;">
+        <a href="/lab5" class="back-btn">← Назад</a>
+    </div>
+{% endblock %}

@@ -13,13 +13,13 @@
         <div class="article-card" style="border:1px solid #ddd;padding:12px;border-radius:8px;margin-bottom:12px;background:#fafafa;">
             <h2>
                 {{ article['title'] }}
-                {% if article.get('is_favorite') in [1, '1', True] or article.get('is_favorite') == True %}
+                {% if article['is_favorite'] in [1, '1', True] or article['is_favorite'] == True %}
                     <sup>★</sup>
                 {% endif %}
             </h2>
             <div style="font-size:0.9em;color:#666;margin-bottom:8px;">
                 Автор: {{ article['author_name'] or article['author_login'] }} ({{ article['author_login'] }})
-                {% if article.get('is_public') in [1, '1', True] or article.get('is_public') == True %}
+                {% if article['is_public'] in [1, '1', True] or article['is_public'] == True %}
                     • публичная
                 {% else %}
                     • приватная

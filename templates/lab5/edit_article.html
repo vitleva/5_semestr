@@ -16,8 +16,8 @@
         </div>
 
         <div>
-            <label><input type="checkbox" name="is_public" {% if article.get('is_public') in [1,'1',True] %}checked{% endif %}> Публичная</label>
-            <label><input type="checkbox" name="is_favorite" {% if article.get('is_favorite') in [1,'1',True] %}checked{% endif %}> Избранная</label>
+            <label><input type="checkbox" name="is_public" {% if article['is_public'] in [1,'1',True] %}checked{% endif %}> Публичная</label>
+            <label><input type="checkbox" name="is_favorite" {% if article['is_favorite'] in [1,'1',True] %}checked{% endif %}> Избранная</label>
         </div>
 
         <div>

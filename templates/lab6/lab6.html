@@ -25,7 +25,8 @@
             for(let i = 0; i<office_list.length; i++) {
                 const office = office_list[i];
                 const li = document.createElement('li');
-                li.innerText = `${office.number}: ${office.tenant || 'свободен'}`;
+                const tenantText = office.tenant || 'свободен';
+                li.innerText = `${office.number}: ${tenantText} — ${office.price.toLocaleString('ru-RU')} ₽/мес`;
 
                 const bookingButton = document.createElement('button');
                 bookingButton.innerText = 'зарезервировать';
@@ -34,6 +35,12 @@
 
                 ul.appendChild(li);
             }
+
+            const total = office_list.reduce(function(sum, o) {
+                return sum + ((o.tenant && o.tenant !== '') ? Number(o.price) : 0);
+            }, 0);
+            const totalEl = document.getElementById('total-cost');
+            totalEl.innerText = `Общая стоимость аренды: ${total.toLocaleString('ru-RU')} ₽/мес`;
         });
     }
 
@@ -83,4 +90,5 @@
 {% block main %}
     <h1>Список кабинетов</h1>
     <ul id="office-list"></ul>
+    <p id="total-cost">Общая стоимость аренды: 0 ₽/мес</p>
 {% endblock %}

@@ -3,88 +3,148 @@
 {% block lab %} Лабораторная работа 6{% endblock %}
 
 {% block script %}
-<script>
-    function getOfficeList() {
-        const url = '/lab6/json-rpc-api/';
-        const json = {
-            'jsonrpc': '2.0',
-            'method': 'info',
-            'id': Math.round(Math.random()*1000)
-        };
-        fetch(url, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(json)
-        })
-        .then(function(response) {
-            return response.json()
-        })
-        .then(function(data) {
-            const office_list = data.result;
-            const ul = document.getElementById('office-list');
-            for(let i = 0; i<office_list.length; i++) {
-                const office = office_list[i];
-                const li = document.createElement('li');
-                const tenantText = office.tenant || 'свободен';
-                li.innerText = `${office.number}: ${tenantText} — ${office.price.toLocaleString('ru-RU')} ₽/мес`;
+    <style>
+        #office-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
 
-                const bookingButton = document.createElement('button');
-                bookingButton.innerText = 'зарезервировать';
-                bookingButton.onclick = function() {booking(office.number)};
-                li.appendChild(bookingButton);
+        #office-list li {
+            background: #ffffff;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.05em;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
 
-                ul.appendChild(li);
-            }
+        #office-list li:hover {
+            transform: scale(1.01);
+            box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+        }
 
-            const total = office_list.reduce(function(sum, o) {
-                return sum + ((o.tenant && o.tenant !== '') ? Number(o.price) : 0);
-            }, 0);
-            const totalEl = document.getElementById('total-cost');
-            totalEl.innerText = `Общая стоимость аренды: ${total.toLocaleString('ru-RU')} ₽/мес`;
-        });
-    }
+        .occupied {
+            background: #ffe2dd !important;
+            border-left: 6px solid #e74c3c;
+        }
 
-    function booking(officeNumber) {
-        const url = '/lab6/json-rpc-api/';
-        const json = {
-            'jsonrpc': '2.0',
-            'method': 'booking',
-            'params': officeNumber,
-            'id': Math.round(Math.random()*1000)
-        };
-        fetch(url, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(json)
-        })
-        .then(function(response) {
-            return response.json()
-        })
-        .then(function(data) {
-            if(data.error) {
-                switch(data.error.code) {
-                    case 1:
-                        alert('Вы не авторизованы, пожалуйста, авторизуйтесь');
-                        break;
-                    case 2:
-                        alert('Офис уже арендуется');
-                        break;
-                    case -32601:
-                        alert('Странная ошибка');
-                        break;
+        #office-list button {
+            background: #4a76a8;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: background 0.2s ease;
+        }
+
+        #office-list button:hover {
+            background: #3c5f87;
+        }
+
+        #total-cost {
+            background: #e8f0fe;
+            border-left: 5px solid #4a76a8;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 1.15em;
+            margin-top: 25px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+    </style>
+
+    <script>
+        function getOfficeList() {
+            const url = '/lab6/json-rpc-api/';
+            const json = {
+                'jsonrpc': '2.0',
+                'method': 'info',
+                'id': Math.round(Math.random()*1000)
+            };
+            fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(json)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const office_list = data.result;
+                const ul = document.getElementById('office-list');
+                ul.innerHTML = '';
+
+                for (let i = 0; i < office_list.length; i++) {
+                    const office = office_list[i];
+                    const li = document.createElement('li');
+
+                    const tenantText = office.tenant || 'свободен';
+                    li.innerText = `${office.number}: ${tenantText} — ${office.price.toLocaleString('ru-RU')} ₽/мес`;
+
+                    if (office.tenant && office.tenant !== '') {
+                        li.classList.add('occupied');
+                    }
+
+                    const bookingButton = document.createElement('button');
+                    bookingButton.innerText = 'зарезервировать';
+                    bookingButton.onclick = function() { booking(office.number); };
+                    li.appendChild(bookingButton);
+
+                    ul.appendChild(li);
                 }
-            }
-            else {
-                document.getElementById('office-list').innerHTML = '';
-                getOfficeList();
-            }
-        });
-    }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        getOfficeList();
-    });
-</script>
+                const total = office_list.reduce((sum, o) =>
+                    sum + ((o.tenant && o.tenant !== '') ? Number(o.price) : 0)
+                , 0);
+
+                document.getElementById('total-cost').innerText =
+                    `Общая стоимость аренды: ${total.toLocaleString('ru-RU')} ₽/мес`;
+            });
+        }
+
+        function booking(officeNumber) {
+            const url = '/lab6/json-rpc-api/';
+            const json = {
+                'jsonrpc': '2.0',
+                'method': 'booking',
+                'params': officeNumber,
+                'id': Math.round(Math.random()*1000)
+            };
+            fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(json)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    switch(data.error.code) {
+                        case 1:
+                            alert('Вы не авторизованы, пожалуйста, авторизуйтесь');
+                            break;
+                        case 2:
+                            alert('Офис уже арендуется');
+                            break;
+                        case -32601:
+                            alert('Странная ошибка');
+                            break;
+                    }
+                } else {
+                    document.getElementById('office-list').innerHTML = '';
+                    getOfficeList();
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            getOfficeList();
+        });
+    </script>
 {% endblock %}
 
 {% block main %}
@@ -92,3 +152,4 @@
     <ul id="office-list"></ul>
     <p id="total-cost">Общая стоимость аренды: 0 ₽/мес</p>
 {% endblock %}
+

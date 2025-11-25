@@ -1,56 +1,154 @@
-from flask import Blueprint, render_template, request, session
+from flask import Blueprint, render_template, request, session, current_app
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import sqlite3
+from os import path
 
 lab6 = Blueprint('lab6', __name__)
 
-offices = []
-for i in range(1, 11):
-    offices.append({"number": i, "tenant": "", "price": 900 + i%3})
+def db_connect():
+    if current_app.config.get('DB_TYPE') == 'postgres':
+        conn = psycopg2.connect(
+            host='127.0.0.1',
+            database='anastasia_vitleva_knowledge_base',
+            user='anastasia_vitleva_knowledge_base',
+            password='123'
+        )
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+    else:
+        dir_path = path.dirname(path.realpath(__file__))
+        db_path = path.join(dir_path, "database.db")
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+    return conn, cur
+
+def db_close(conn, cur):
+    conn.commit()
+    cur.close()
+    conn.close()
 
 @lab6.route('/lab6/')
 def main():
     return render_template('lab6/lab6.html')
 
-@lab6.route('/lab6/json-rpc-api/', methods = ['POST'])
+@lab6.route('/lab6/json-rpc-api/', methods=['POST'])
 def api():
-    data = request.json
-    id = data['id']
-    if data['method'] == 'info':
+    data = request.json or {}
+    id = data.get('id')
+    method = data.get('method')
+
+    if method == 'info':
+        conn, cur = db_connect()
+        try:
+            if current_app.config.get('DB_TYPE') == 'postgres':
+                cur.execute("SELECT number, tenant, price FROM offices ORDER BY number;")
+                rows = cur.fetchall()
+                offices = []
+                for r in rows:
+                    offices.append({
+                        'number': r['number'],
+                        'tenant': r['tenant'] or '',
+                        'price': r['price']
+                    })
+            else:
+                cur.execute("SELECT number, tenant, price FROM offices ORDER BY number;")
+                rows = cur.fetchall()
+                offices = []
+                for r in rows:
+                    offices.append({
+                        'number': r['number'],
+                        'tenant': r['tenant'] or '',
+                        'price': r['price']
+                    })
+        finally:
+            db_close(conn, cur)
+
         return {
             'jsonrpc': '2.0',
             'result': offices,
             'id': id
         }
-    
+
     login = session.get('login')
     if not login:
         return {
-            'jsonprc': '2.0',
+            'jsonrpc': '2.0',
             'error': {
                 'code': 1,
                 'message': 'Unauthorized'
             },
             'id': id
         }
-    
-    if data['method'] == 'booking':
-        office_number = data['params']
-        for office in offices:
-            if office['number'] == office_number:
-                if office['tenant'] != '':
-                    return {
-                        'jsonrpc': '2.0',
-                        'error': {
-                            'code': 2,
-                            'message': 'Already booked'
-                        },
-                        'id': id
-                    }
-                office['tenant'] = login
+
+    if method == 'booking':
+        office_number = data.get('params')
+        try:
+            office_number = int(office_number)
+        except Exception:
+            return {
+                'jsonrpc': '2.0',
+                'error': {
+                    'code': -32602,
+                    'message': 'Invalid params'
+                },
+                'id': id
+            }
+
+        conn, cur = db_connect()
+        try:
+            # получить текущее состояние кабинета
+            if current_app.config.get('DB_TYPE') == 'postgres':
+                cur.execute("SELECT tenant FROM offices WHERE number = %s;", (office_number,))
+                row = cur.fetchone()
+            else:
+                cur.execute("SELECT tenant FROM offices WHERE number = ?;", (office_number,))
+                row = cur.fetchone()
+
+            if not row:
+                # кабинет с таким номером не найден
+                db_close(conn, cur)
                 return {
                     'jsonrpc': '2.0',
-                    'result': 'success',
+                    'error': {
+                        'code': -32602,
+                        'message': 'Invalid params'
+                    },
                     'id': id
                 }
+
+            # извлечь значение tenant
+            current_tenant = None
+            if isinstance(row, dict):  # psycopg2 RealDictCursor
+                current_tenant = row.get('tenant') or ''
+            else:  # sqlite3.Row
+                current_tenant = row['tenant'] if row['tenant'] is not None else ''
+
+            if current_tenant != '':
+                db_close(conn, cur)
+                return {
+                    'jsonrpc': '2.0',
+                    'error': {
+                        'code': 2,
+                        'message': 'Already booked'
+                    },
+                    'id': id
+                }
+
+            # обновить tenant
+            if current_app.config.get('DB_TYPE') == 'postgres':
+                cur.execute("UPDATE offices SET tenant = %s WHERE number = %s;", (login, office_number))
+            else:
+                cur.execute("UPDATE offices SET tenant = ? WHERE number = ?;", (login, office_number))
+        finally:
+            db_close(conn, cur)
+
+        return {
+            'jsonrpc': '2.0',
+            'result': 'success',
+            'id': id
+        }
+
     return {
         'jsonrpc': '2.0',
         'error': {

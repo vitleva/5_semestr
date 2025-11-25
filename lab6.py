@@ -1,8 +1,9 @@
+import os
 from flask import Blueprint, render_template, request, session, current_app
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import sqlite3
-from os import path
+from os import path, stat
 
 lab6 = Blueprint('lab6', __name__)
 
@@ -15,23 +16,22 @@ def db_connect():
             password='123'
         )
         cur = conn.cursor(cursor_factory=RealDictCursor)
-    else:
-        db_path = current_app.config.get('DB_PATH')
-        if not db_path:
-            # fallback to absolute path inside the app package
-            db_path = path.join(current_app.root_path, "database.db")
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        cur = conn.cursor()
+        return conn, cur
+
+    db_path = current_app.config.get('DB_PATH')
+    if not db_path:
+        db_path = path.join(current_app.root_path, "database.db")
+
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
     return conn, cur
 
 def db_close(conn, cur):
-    # commit и закрыть; предполагается, что conn ещё открыт
     try:
         conn.commit()
-    except Exception:
-        # если commit упал (например, соединение уже закрыто), просто проигнорируем
-        pass
+    except Exception as e:
+        print("[lab6] Warning: commit failed:", e)
     try:
         cur.close()
     except Exception:
@@ -40,6 +40,7 @@ def db_close(conn, cur):
         conn.close()
     except Exception:
         pass
+
 
 @lab6.route('/lab6/')
 def main():
@@ -58,14 +59,15 @@ def api():
             rows = cur.fetchall()
             offices = []
             for r in rows:
-                tenant = r['tenant'] if ('tenant' in r and r['tenant'] is not None) else (r.get('tenant') if hasattr(r, 'get') else '')
                 offices.append({
                     'number': r['number'],
-                    'tenant': tenant or '',
+                    'tenant': r['tenant'] or '',
                     'price': r['price']
                 })
+
         finally:
             db_close(conn, cur)
+
         return {
             'jsonrpc': '2.0',
             'result': offices,

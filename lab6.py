@@ -24,9 +24,20 @@ def db_connect():
     return conn, cur
 
 def db_close(conn, cur):
-    conn.commit()
-    cur.close()
-    conn.close()
+    # commit и закрыть; предполагается, что conn ещё открыт
+    try:
+        conn.commit()
+    except Exception:
+        # если commit упал (например, соединение уже закрыто), просто проигнорируем
+        pass
+    try:
+        cur.close()
+    except Exception:
+        pass
+    try:
+        conn.close()
+    except Exception:
+        pass
 
 @lab6.route('/lab6/')
 def main():
@@ -41,29 +52,18 @@ def api():
     if method == 'info':
         conn, cur = db_connect()
         try:
-            if current_app.config.get('DB_TYPE') == 'postgres':
-                cur.execute("SELECT number, tenant, price FROM offices ORDER BY number;")
-                rows = cur.fetchall()
-                offices = []
-                for r in rows:
-                    offices.append({
-                        'number': r['number'],
-                        'tenant': r['tenant'] or '',
-                        'price': r['price']
-                    })
-            else:
-                cur.execute("SELECT number, tenant, price FROM offices ORDER BY number;")
-                rows = cur.fetchall()
-                offices = []
-                for r in rows:
-                    offices.append({
-                        'number': r['number'],
-                        'tenant': r['tenant'] or '',
-                        'price': r['price']
-                    })
+            cur.execute("SELECT number, tenant, price FROM offices ORDER BY number;")
+            rows = cur.fetchall()
+            offices = []
+            for r in rows:
+                tenant = r['tenant'] if ('tenant' in r and r['tenant'] is not None) else (r.get('tenant') if hasattr(r, 'get') else '')
+                offices.append({
+                    'number': r['number'],
+                    'tenant': tenant or '',
+                    'price': r['price']
+                })
         finally:
             db_close(conn, cur)
-
         return {
             'jsonrpc': '2.0',
             'result': offices,
@@ -96,53 +96,47 @@ def api():
             }
 
         conn, cur = db_connect()
-        try:
-            # получить текущее состояние кабинета
-            if current_app.config.get('DB_TYPE') == 'postgres':
-                cur.execute("SELECT tenant FROM offices WHERE number = %s;", (office_number,))
-                row = cur.fetchone()
-            else:
-                cur.execute("SELECT tenant FROM offices WHERE number = ?;", (office_number,))
-                row = cur.fetchone()
+        if current_app.config.get('DB_TYPE') == 'postgres':
+            cur.execute("SELECT tenant FROM offices WHERE number = %s;", (office_number,))
+            row = cur.fetchone()
+        else:
+            cur.execute("SELECT tenant FROM offices WHERE number = ?;", (office_number,))
+            row = cur.fetchone()
 
-            if not row:
-                # кабинет с таким номером не найден
-                db_close(conn, cur)
-                return {
-                    'jsonrpc': '2.0',
-                    'error': {
-                        'code': -32602,
-                        'message': 'Invalid params'
-                    },
-                    'id': id
-                }
-
-            # извлечь значение tenant
-            current_tenant = None
-            if isinstance(row, dict):  # psycopg2 RealDictCursor
-                current_tenant = row.get('tenant') or ''
-            else:  # sqlite3.Row
-                current_tenant = row['tenant'] if row['tenant'] is not None else ''
-
-            if current_tenant != '':
-                db_close(conn, cur)
-                return {
-                    'jsonrpc': '2.0',
-                    'error': {
-                        'code': 2,
-                        'message': 'Already booked'
-                    },
-                    'id': id
-                }
-
-            # обновить tenant
-            if current_app.config.get('DB_TYPE') == 'postgres':
-                cur.execute("UPDATE offices SET tenant = %s WHERE number = %s;", (login, office_number))
-            else:
-                cur.execute("UPDATE offices SET tenant = ? WHERE number = ?;", (login, office_number))
-        finally:
+        if not row:
             db_close(conn, cur)
+            return {
+                'jsonrpc': '2.0',
+                'error': {
+                    'code': -32602,
+                    'message': 'Invalid params'
+                },
+                'id': id
+            }
 
+        if isinstance(row, dict):  # psycopg2 RealDictRow
+            current_tenant = row.get('tenant') or ''
+        else:  # sqlite3.Row
+            current_tenant = row['tenant'] if row['tenant'] is not None else ''
+
+        if current_tenant != '':
+            db_close(conn, cur)
+            return {
+                'jsonrpc': '2.0',
+                'error': {
+                    'code': 2,
+                    'message': 'Already booked'
+                },
+                'id': id
+            }
+
+        # обновляем запись
+        if current_app.config.get('DB_TYPE') == 'postgres':
+            cur.execute("UPDATE offices SET tenant = %s WHERE number = %s;", (login, office_number))
+        else:
+            cur.execute("UPDATE offices SET tenant = ? WHERE number = ?;", (login, office_number))
+
+        db_close(conn, cur)
         return {
             'jsonrpc': '2.0',
             'result': 'success',

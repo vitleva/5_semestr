@@ -16,8 +16,10 @@ def db_connect():
         )
         cur = conn.cursor(cursor_factory=RealDictCursor)
     else:
-        dir_path = path.dirname(path.realpath(__file__))
-        db_path = path.join(dir_path, "database.db")
+        db_path = current_app.config.get('DB_PATH')
+        if not db_path:
+            # fallback to absolute path inside the app package
+            db_path = path.join(current_app.root_path, "database.db")
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()

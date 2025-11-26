@@ -150,6 +150,9 @@
                         case -32601:
                             alert('Странная ошибка');
                             break;
+                            case 3:
+                            alert('Офис уже свободен');
+                            break;
                         default:
                             alert(data.error.message || 'Ошибка');
                     }

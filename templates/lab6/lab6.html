@@ -81,7 +81,8 @@
             })
             .then(response => response.json())
             .then(data => {
-                const office_list = data.result;
+                const office_list = data.result.offices;
+                const currentUser = data.result.user;
                 const ul = document.getElementById('office-list');
                 ul.innerHTML = '';
 
@@ -116,8 +117,9 @@
                 }
 
                 const total = office_list.reduce((sum, o) =>
-                    sum + ((o.tenant && o.tenant !== '') ? Number(o.price) : 0)
+                    sum + ((o.tenant === currentUser) ? Number(o.price) : 0)
                 , 0);
+
 
                 document.getElementById('total-cost').innerText =
                     `Общая стоимость аренды: ${total.toLocaleString('ru-RU')} ₽/мес`;
@@ -149,9 +151,6 @@
                             break;
                         case -32601:
                             alert('Странная ошибка');
-                            break;
-                            case 3:
-                            alert('Офис уже свободен');
                             break;
                         default:
                             alert(data.error.message || 'Ошибка');

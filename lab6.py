@@ -100,6 +100,7 @@ def api():
             }
 
         conn, cur = db_connect()
+        # получение текущего tenant
         if current_app.config.get('DB_TYPE') == 'postgres':
             cur.execute("SELECT tenant FROM offices WHERE number = %s;", (office_number,))
             row = cur.fetchone()
@@ -147,6 +148,83 @@ def api():
             'id': id
         }
 
+    if method == 'cancellation':
+        office_number = data.get('params')
+        try:
+            office_number = int(office_number)
+        except Exception:
+            return {
+                'jsonrpc': '2.0',
+                'error': {
+                    'code': -32602,
+                    'message': 'Invalid params'
+                },
+                'id': id
+            }
+
+        conn, cur = db_connect()
+        # получить tenant текущий
+        if current_app.config.get('DB_TYPE') == 'postgres':
+            cur.execute("SELECT tenant FROM offices WHERE number = %s;", (office_number,))
+            row = cur.fetchone()
+        else:
+            cur.execute("SELECT tenant FROM offices WHERE number = ?;", (office_number,))
+            row = cur.fetchone()
+
+        if not row:
+            db_close(conn, cur)
+            return {
+                'jsonrpc': '2.0',
+                'error': {
+                    'code': -32602,
+                    'message': 'Invalid params'
+                },
+                'id': id
+            }
+
+        if isinstance(row, dict):
+            current_tenant = row.get('tenant') or ''
+        else:
+            current_tenant = row['tenant'] if row['tenant'] is not None else ''
+
+        # проверка, что офис арендован
+        if current_tenant == '':
+            db_close(conn, cur)
+            return {
+                'jsonrpc': '2.0',
+                'error': {
+                    'code': 3,
+                    'message': 'Not rented'
+                },
+                'id': id
+            }
+
+        # проверка, что арендатор - текущий пользователь
+        if current_tenant != login:
+            db_close(conn, cur)
+            return {
+                'jsonrpc': '2.0',
+                'error': {
+                    'code': 4,
+                    'message': 'Not tenant'
+                },
+                'id': id
+            }
+
+        # снимаем аренду (обнуляем tenant)
+        if current_app.config.get('DB_TYPE') == 'postgres':
+            cur.execute("UPDATE offices SET tenant = %s WHERE number = %s;", ('', office_number))
+        else:
+            cur.execute("UPDATE offices SET tenant = ? WHERE number = ?;", ('', office_number))
+
+        db_close(conn, cur)
+        return {
+            'jsonrpc': '2.0',
+            'result': 'success',
+            'id': id
+        }
+
+    # метод не найден
     return {
         'jsonrpc': '2.0',
         'error': {

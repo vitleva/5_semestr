@@ -33,6 +33,12 @@
             border-left: 6px solid #e74c3c;
         }
 
+        #office-list .controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
         #office-list button {
             background: #4a76a8;
             color: white;
@@ -90,10 +96,21 @@
                         li.classList.add('occupied');
                     }
 
+                    // controls container (reserve + free)
+                    const controls = document.createElement('div');
+                    controls.className = 'controls';
+
                     const bookingButton = document.createElement('button');
                     bookingButton.innerText = 'зарезервировать';
                     bookingButton.onclick = function() { booking(office.number); };
-                    li.appendChild(bookingButton);
+
+                    const freeButton = document.createElement('button');
+                    freeButton.innerText = 'освободить';
+                    freeButton.onclick = function() { cancellation(office.number); };
+
+                    controls.appendChild(bookingButton);
+                    controls.appendChild(freeButton);
+                    li.appendChild(controls);
 
                     ul.appendChild(li);
                 }
@@ -123,7 +140,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
-                    switch(data.error.code) {
+                    switch(Number(data.error.code)) {
                         case 1:
                             alert('Вы не авторизованы, пожалуйста, авторизуйтесь');
                             break;
@@ -133,11 +150,60 @@
                         case -32601:
                             alert('Странная ошибка');
                             break;
+                        default:
+                            alert(data.error.message || 'Ошибка');
                     }
                 } else {
                     document.getElementById('office-list').innerHTML = '';
                     getOfficeList();
                 }
+            })
+            .catch(err => {
+                console.error('booking error', err);
+                alert('Ошибка соединения');
+            });
+        }
+
+        function cancellation(officeNumber) {
+            const url = '/lab6/json-rpc-api/';
+            const json = {
+                'jsonrpc': '2.0',
+                'method': 'cancellation',
+                'params': officeNumber,
+                'id': Math.round(Math.random()*1000)
+            };
+            fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(json)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    switch(Number(data.error.code)) {
+                        case 1:
+                            alert('Вы не авторизованы, пожалуйста, авторизуйтесь');
+                            break;
+                        case 3:
+                            alert('Офис не арендуется');
+                            break;
+                        case 4:
+                            alert('Нельзя снять чужую аренду');
+                            break;
+                        case -32601:
+                            alert('Странная ошибка');
+                            break;
+                        default:
+                            alert(data.error.message || 'Ошибка');
+                    }
+                } else {
+                    document.getElementById('office-list').innerHTML = '';
+                    getOfficeList();
+                }
+            })
+            .catch(err => {
+                console.error('cancellation error', err);
+                alert('Ошибка соединения');
             });
         }
 
@@ -152,4 +218,5 @@
     <ul id="office-list"></ul>
     <p id="total-cost">Общая стоимость аренды: 0 ₽/мес</p>
 {% endblock %}
+
 

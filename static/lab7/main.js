@@ -7,6 +7,7 @@ function fillFilmList() {
         let tbody = document.getElementById('film-list');
         tbody.innerHTML = '';
         for(let i = 0; i<films.length; i++) {
+            let film = films[i];
             let tr = document.createElement('tr');
             
             let tdTitleRus = document.createElement('td');
@@ -14,20 +15,20 @@ function fillFilmList() {
             let tdYear = document.createElement('td');
             let tdActions = document.createElement('td');
 
-            tdTitleRus.innerText = films[i].title_ru;
-            tdTitle.innerHTML = films[i].title ? '<i>(' + films[i].title + ')</i>' : '';
-            tdYear.innerText = films[i].year;
+            tdTitleRus.innerText = film.title_ru;
+            tdTitle.innerHTML = film.title ? '<i>(' + film.title + ')</i>' : '';
+            tdYear.innerText = film.year;
 
             let editButton = document.createElement('button');
             editButton.innerText = 'редактировать'
             editButton.onclick = function() {
-                editFilm(i);
+                editFilm(film.id);
             }
 
             let delButton = document.createElement('button');
             delButton.innerText = 'удалить';
             delButton.onclick = function() {
-                deleteFilm(i, films[i].title_ru);
+                deleteFilm(film.id, film.title_ru);
             }
 
             tdActions.append(editButton);
@@ -87,7 +88,7 @@ function sendFilm() {
         description: document.getElementById('description').value
     }
 
-    const url = `/lab7/rest-api/films/${id}`;
+    const url = id === '' ? `/lab7/rest-api/films/` : `/lab7/rest-api/films/${id}`;
     const method = id === '' ? 'POST' : 'PUT';
 
     document.getElementById('description-error').innerText = '';

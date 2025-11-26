@@ -55,6 +55,9 @@ function deleteFilm(id, title) {
 
 function showModal() {
     document.getElementById('description-error').innerText = '';
+    document.getElementById('title-error').innerText = '';
+    document.getElementById('title-ru-error').innerText = '';
+    document.getElementById('year-error').innerText = '';
     document.querySelector('div.modal').style.display = 'block';
 }
 
@@ -87,6 +90,11 @@ function sendFilm() {
     const url = `/lab7/rest-api/films/${id}`;
     const method = id === '' ? 'POST' : 'PUT';
 
+    document.getElementById('description-error').innerText = '';
+    document.getElementById('title-error').innerText = '';
+    document.getElementById('title-ru-error').innerText = '';
+    document.getElementById('year-error').innerText = '';
+
     fetch(url, {
         method: method,
         headers: {"Content-Type": "application/json"},
@@ -101,8 +109,20 @@ function sendFilm() {
         return resp.json();
     })
     .then(function(errors) {
-        if(errors.description)
+        if (!errors) return;
+        if (errors.description)
             document.getElementById('description-error').innerText = errors.description;
+        if (errors.title)
+            document.getElementById('title-error').innerText = errors.title;
+        if (errors.title_ru)
+            document.getElementById('title-ru-error').innerText = errors.title_ru;
+        if (errors.year)
+            document.getElementById('year-error').innerText = errors.year;
+        if (errors.error)
+            document.getElementById('description-error').innerText = errors.error;
+    })
+    .catch(function(err) {
+        console.error(err);
     });
 }
 

@@ -63,15 +63,14 @@
                 meta.innerText = w.start + ' — ' + w.end;
                 const owner = document.createElement('div');
                 owner.className = 'meta';
-                owner.innerText = w.booked ? ('Занят: ' + w.by_name + ' ('+ w.by +')') : 'Свободно';
+                owner.innerText = w.booked ? ('Занято: ' + w.by_name + ' ('+ w.by +')') : 'Свободно';
 
-                // --- ВЫЧИСЛЕНИЕ ПРОШЕДШЕЙ НЕДЕЛИ ДЛЯ КАЖДОЙ w ---
+                // ВЫЧИСЛЕНИЕ ПРОШЕДШЕЙ НЕДЕЛИ ДЛЯ КАЖДОЙ w
                 const today = new Date();
                 const weekEnd = new Date(w.end); // w.end в формате 'YYYY-MM-DD'
                 const pastWeek = weekEnd < today;
                 // readonly: если год уже в прошлом ИЛИ конкретная неделя уже прошла
                 const readonly = (data.year < (new Date()).getFullYear()) || pastWeek;
-                // -------------------------------------------------
 
                 const controls = document.createElement('div');
                 if(w.booked && w.by === currentUser) {
@@ -97,7 +96,7 @@
                 div.appendChild(h); div.appendChild(meta); div.appendChild(owner); div.appendChild(controls);
                 grid.appendChild(div);
             }
-            document.getElementById('summary').innerText = `Выбрано мной: ${myCount} / 4. ${ myCount < 4 ? 'Нужно выбрать ещё: ' + (4-myCount) : 'Выбрано правилньо.'}`;
+            document.getElementById('summary').innerText = `Выбрано мной: ${myCount} / 4. ${ myCount < 4 ? 'Нужно выбрать ещё: ' + (4-myCount) : 'Выбрано правильно.'}`;
         }).catch(err => {
             console.error("Ошибка при получении данных:", err);
         });

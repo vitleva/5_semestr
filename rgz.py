@@ -205,7 +205,7 @@ def api():
     # для некоторых методов проверяем логин
     login = session.get('login')
     if not login:
-        return {'jsonrpc': '2.0', 'error': {'code': 1, 'message': 'Unauthorized'}, 'id': id}
+        return {'jsonrpc': '2.0', 'error': {'code': 1, 'message': 'Нужно авторизоваться'}, 'id': id}
 
     # броинрование недели
     if method == 'booking':
@@ -231,7 +231,7 @@ def api():
             return {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params (week/year)'} , 'id': id}
 
         if week_end < date.today():
-            return {'jsonrpc': '2.0', 'error': {'code': 6, 'message': 'Past week (cannot modify past weeks)'}, 'id': id}
+            return {'jsonrpc': '2.0', 'error': {'code': 6, 'message': 'Нельзя редактировать прошедшую неделю'}, 'id': id}
 
         conn, cur = db_connect()
         try:
@@ -261,7 +261,7 @@ def api():
 
             if cnt_int >= 4:
                 db_close(conn, cur)
-                return {'jsonrpc': '2.0', 'error': {'code': 5, 'message': 'Limit reached (4 weeks)'}, 'id': id}
+                return {'jsonrpc': '2.0', 'error': {'code': 5, 'message': 'Достигнут максимум - 4 недели'}, 'id': id}
 
             # проверка свободно ли
             if current_app.config.get('DB_TYPE') == 'postgres':
@@ -272,7 +272,7 @@ def api():
                 r = cur.fetchone()
             if r:
                 db_close(conn, cur)
-                return {'jsonrpc': '2.0', 'error': {'code': 2, 'message': 'Already booked'}, 'id': id}
+                return {'jsonrpc': '2.0', 'error': {'code': 2, 'message': 'Уже забронировано'}, 'id': id}
 
             # добавляем бронь
             if current_app.config.get('DB_TYPE') == 'postgres':
@@ -306,7 +306,7 @@ def api():
             return {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Invalid params (week/year)'}, 'id': id}
 
         if week_end < date.today():
-            return {'jsonrpc': '2.0', 'error': {'code': 6, 'message': 'Past week (cannot modify past weeks)'}, 'id': id}
+            return {'jsonrpc': '2.0', 'error': {'code': 6, 'message': 'Нельзя редактировать прошедшую неделю'}, 'id': id}
 
         conn, cur = db_connect()
         try:
@@ -330,12 +330,12 @@ def api():
                 r = cur.fetchone()
             if not r:
                 db_close(conn, cur)
-                return {'jsonrpc': '2.0', 'error': {'code': 3, 'message': 'Not rented'}, 'id': id}
+                return {'jsonrpc': '2.0', 'error': {'code': 3, 'message': 'Не занято'}, 'id': id}
 
             owner_id = r['user_id'] if isinstance(r, dict) else (list(r)[0] if isinstance(r, (list, tuple)) else r[0])
             if owner_id != user_id:
                 db_close(conn, cur)
-                return {'jsonrpc': '2.0', 'error': {'code': 4, 'message': 'Not tenant'}, 'id': id}
+                return {'jsonrpc': '2.0', 'error': {'code': 4, 'message': 'Нет прав'}, 'id': id}
 
             # удаляем
             if current_app.config.get('DB_TYPE') == 'postgres':

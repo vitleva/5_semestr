@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block lab %}Планирование отпусков{% endblock %}
+
+{% block script %}
+    <style>
+        .rgz-controls { display:flex; gap:10px; align-items:center; margin-bottom:12px; }
+        .year-input { width:100px; padding:6px; border-radius:6px; border:1px solid #ccc; }
+        .weeks-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:8px; }
+        .week-card {
+            background:#fff; padding:8px; border-radius:8px; box-shadow:0 1px 6px rgba(0,0,0,0.06);
+            display:flex; flex-direction:column; justify-content:space-between;
+        }
+        .week-card.booked { background:#ffecec; border-left:6px solid #e74c3c; }
+        .week-card .meta { font-size:0.9em; color:#666; }
+        .btn { background:#4a76a8; color:#fff; padding:6px 8px; border:none; border-radius:6px; cursor:pointer; margin-top:6px; }
+        .btn.secondary { background:#6c757d; }
+        .info-line { margin-top:12px; font-weight:bold; }
+        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+        .user-block { font-size:0.95em; color:#333; }
+    </style>
+
+    <script>
+    function getInfo(year) {
+        const payload = { jsonrpc: '2.0', method: 'info', params: year, id: Math.round(Math.random()*10000) };
+        return fetch('/rgz/json-rpc/', {
+            method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+        }).then(r=>r.json());
+    }
+
+    function booking(year, week) {
+        const payload = { jsonrpc:'2.0', method:'booking', params: {year: year, week: week}, id: Math.round(Math.random()*10000) };
+        return fetch('/rgz/json-rpc/', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)})
+            .then(r=>r.json());
+    }
+    function cancellation(year, week) {
+        const payload = { jsonrpc:'2.0', method:'cancellation', params: {year: year, week: week}, id: Math.round(Math.random()*10000) };
+        return fetch('/rgz/json-rpc/', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)})
+            .then(r=>r.json());
+    }
+
+    function render(year) {
+        getInfo(year).then(resp => {
+            if(!resp || !resp.result) return;
+            const data = resp.result;
+            const weeks = data.weeks;
+            const currentUser = data.user;
+            document.getElementById('year').value = data.year;
+            document.getElementById('user-name').innerText = currentUser ? ('Вход как: ' + currentUser) : 'Не авторизован';
+            const grid = document.getElementById('weeks');
+            grid.innerHTML = '';
+
+            // подсчет броней пользователя
+            let myCount = 0;
+
+            for(let i=0;i<weeks.length;i++){
+                const w = weeks[i];
+                const div = document.createElement('div');
+                div.className = 'week-card' + (w.booked ? ' booked' : '');
+                const h = document.createElement('div');
+                h.innerHTML = `<strong>Неделя ${w.week}</strong>`;
+                const meta = document.createElement('div');
+                meta.className = 'meta';
+                meta.innerText = w.start + ' — ' + w.end;
+                const owner = document.createElement('div');
+                owner.className = 'meta';
+                owner.innerText = w.booked ? ('Занят: ' + w.by_name + ' ('+ w.by +')') : 'Свободно';
+
+                // --- ВЫЧИСЛЕНИЕ ПРОШЕДШЕЙ НЕДЕЛИ ДЛЯ КАЖДОЙ w ---
+                const today = new Date();
+                const weekEnd = new Date(w.end); // w.end в формате 'YYYY-MM-DD'
+                const pastWeek = weekEnd < today;
+                // readonly: если год уже в прошлом ИЛИ конкретная неделя уже прошла
+                const readonly = (data.year < (new Date()).getFullYear()) || pastWeek;
+                // -------------------------------------------------
+
+                const controls = document.createElement('div');
+                if(w.booked && w.by === currentUser) {
+                    // показываем кнопку освободить, если не прошлый год и неделя не прошла
+                    if(!readonly){
+                        const freeBtn = document.createElement('button');
+                        freeBtn.className = 'btn secondary';
+                        freeBtn.innerText = 'Освободить';
+                        freeBtn.onclick = function(){ cancellation(data.year, w.week).then(()=>render(data.year)); };
+                        controls.appendChild(freeBtn);
+                    }
+                    myCount++;
+                } else {
+                    // если свободно и авторизованный юзер, можно забронировать
+                    if(!readonly && !w.booked && currentUser){
+                        const bookBtn = document.createElement('button');
+                        bookBtn.className = 'btn';
+                        bookBtn.innerText = 'Забронировать';
+                        bookBtn.onclick = function(){ booking(data.year, w.week).then(res=>{ if(res.error) { alert(res.error.message); } render(data.year); }); };
+                        controls.appendChild(bookBtn);
+                    }
+                }
+                div.appendChild(h); div.appendChild(meta); div.appendChild(owner); div.appendChild(controls);
+                grid.appendChild(div);
+            }
+            document.getElementById('summary').innerText = `Выбрано мной: ${myCount} / 4. ${ myCount < 4 ? 'Нужно выбрать ещё: ' + (4-myCount) : 'Выбрано правилньо.'}`;
+        }).catch(err => {
+            console.error("Ошибка при получении данных:", err);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+        const curYear = new Date().getFullYear();
+        document.getElementById('year').value = curYear;
+        document.getElementById('btn-refresh').onclick = function(){ render(parseInt(document.getElementById('year').value)); };
+        document.getElementById('btn-prev').onclick = function(){ document.getElementById('year').value = parseInt(document.getElementById('year').value) - 1; render(parseInt(document.getElementById('year').value)); };
+        document.getElementById('btn-next').onclick = function(){ document.getElementById('year').value = parseInt(document.getElementById('year').value) + 1; render(parseInt(document.getElementById('year').value)); };
+        render(curYear);
+    });
+    </script>
+    {% endblock %}
+
+    {% block main %}
+    <div class="header">
+        <div><h1>Планирование отпусков</h1>
+        <div class="user-block">Студент: Витлева Анастасия (ФБИ-31)</div>
+        </div>
+        <div>
+            <div id="user-name"></div>
+            <div style="margin-top:8px;">
+                {% if login %}
+                    <a href="{{ url_for('rgz.logout') }}">Выход</a>
+                    <form method="post" action="{{ url_for('rgz.delete_account') }}" style="display:inline;">
+                        <button class="btn secondary" type="submit">Удалить аккаунт</button>
+                    </form>
+                {% else %}
+                    <a href="{{ url_for('rgz.login') }}">Войти</a> | <a href="{{ url_for('rgz.register') }}">Регистрация</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="rgz-controls">
+        <button id="btn-prev" class="btn secondary">←</button>
+        <input id="year" class="year-input" />
+        <button id="btn-next" class="btn secondary">→</button>
+        <button id="btn-refresh" class="btn">Обновить</button>
+    </div>
+
+    <div id="weeks" class="weeks-grid"></div>
+
+    <div id="summary" class="info-line"></div>
+{% endblock %}

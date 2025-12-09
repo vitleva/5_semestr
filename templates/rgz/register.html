@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block lab %}Планирование отпусков — регистрация{% endblock %}
+{% block main %}
+    <h1>Регистрация</h1>
+    <div class="form" style="max-width:480px;margin:10px auto;">
+        {% if error %}<div style="color:red">{{ error }}</div>{% endif %}
+        <form method="post">
+            <label>ФИО: <input name="name" value="{{ name or '' }}" /></label>
+            <label>Логин: <input name="login" value="{{ login or '' }}" /></label>
+            <label>Пароль: <input name="password" type="password" /></label>
+            <div><button type="submit">Зарегистрироваться</button></div>
+        </form>
+    </div>
+{% endblock %}

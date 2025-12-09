@@ -119,25 +119,44 @@ def delete_account():
     return redirect(url_for('rgz.main'))
 
 def weeks_for_year(year):
-    # produce list of dicts: {'week': n, 'start': 'YYYY-MM-DD','end':'YYYY-MM-DD'}
+    """
+    Возвращает список словарей {'week': n, 'start': 'YYYY-MM-DD', 'end': 'YYYY-MM-DD'}
+    для всех существующих ISO-недель в указанном году.
+    """
     weeks = []
-    # находим первый понедельник первой недели
-    dt = date(year, 1, 4)
-    # понедельник:
-    monday = dt - timedelta(days=dt.isoweekday() - 1)
-    # перебираем недели до 1-го понедельника след. года
     idx = 1
-    while monday.year <= year:
-        start = monday
-        end = start + timedelta(days=6)
-        if start.year > year and end.year > year:
-            break
-        weeks.append({'week': idx, 'start': start.isoformat(), 'end': end.isoformat()})
-        idx += 1
-        monday = monday + timedelta(days=7)
-        if idx > 60:
-            break
+    # если есть fromisocalendar — используем прямой цикл по неделям до ValueError
+    try:
+        while True:
+            try:
+                wk_start = date.fromisocalendar(year, idx, 1)  # понедельник недели idx
+            except ValueError:
+                break  # неделя с таким номером не существует для этого года
+            wk_end = wk_start + timedelta(days=6)
+            # Останавливаемся, если неделя целиком ушла в следующий год (страховка)
+            if wk_start.year > year and wk_end.year > year:
+                break
+            weeks.append({'week': idx, 'start': wk_start.isoformat(), 'end': wk_end.isoformat()})
+            idx += 1
+            if idx > 60:  # safety cap
+                break
+    except AttributeError:
+        dt = date(year, 1, 4)
+        monday = dt - timedelta(days=dt.isoweekday() - 1)
+        idx = 1
+        while monday.year <= year:
+            start = monday
+            end = start + timedelta(days=6)
+            if start.year > year and end.year > year:
+                break
+            weeks.append({'week': idx, 'start': start.isoformat(), 'end': end.isoformat()})
+            idx += 1
+            monday = monday + timedelta(days=7)
+            if idx > 60:
+                break
+
     return weeks
+
 
 @rgz.route('/rgz/json-rpc/', methods=['POST'])
 def api():
@@ -333,3 +352,4 @@ def api():
 @rgz.route('/rgz/')
 def main():
     return render_template('rgz/index.html', login=session.get('login'))
+

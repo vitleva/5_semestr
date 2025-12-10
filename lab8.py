@@ -1,4 +1,4 @@
-from flask import Blueprint, session, render_template, request, redirect, current_app, abort
+from flask import Blueprint, session, render_template, request, redirect, current_app, abort, g
 from db import db
 from db.models import users, articles
 from flask_login import login_user, login_required, current_user, logout_user
@@ -70,12 +70,30 @@ def login():
                            error = 'Ошибка входа: логин и/или пароль неверны')
 
 @lab8.route('/lab8/articles/')
-@login_required
 def article_list():
-    # Сначала избранные, потом остальные
-    my_articles = articles.query.filter_by(login_id=current_user.id)\
-                                .order_by(articles.is_favorite.desc(), articles.id.desc()).all()
-    return render_template('lab8/articles.html', articles=my_articles)
+    if current_user.is_authenticated:
+        # авторизованный пользователь
+        my_id = current_user.id
+        # получить все статьи: свои + публичные чужие
+        all_articles = articles.query.join(users, articles.login_id == users.id)\
+            .filter(
+                (articles.login_id == my_id) |  # свои статьи
+                (articles.is_public == True)    # публичные статьи других
+            )\
+            .order_by(
+                # свои избранные статьи сверху
+                (articles.login_id == my_id).desc(),
+                articles.is_favorite.desc(),
+                articles.id.desc()
+            ).all()
+    else:
+        # неавторизованный: только публичные статьи
+        all_articles = articles.query.join(users, articles.login_id == users.id)\
+            .filter(articles.is_public == True)\
+            .order_by(articles.id.desc()).all()
+
+    return render_template('lab8/articles.html', articles=all_articles)
+
 
 
 @lab8.route('/lab8/create', methods=['GET', 'POST'])
@@ -158,10 +176,10 @@ def logout():
 @login_required
 def toggle_favorite(article_id):
     article = articles.query.get_or_404(article_id)
-
-    if article.login_id != current_user.id:
-        abort(403)
-
-    article.is_favorite = not article.is_favorite
+    
+    # Меняем статус избранного для статьи
+    article.is_favorite = not bool(article.is_favorite)
     db.session.commit()
+    
     return redirect('/lab8/articles/')
+

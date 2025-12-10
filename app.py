@@ -7,6 +7,7 @@ from lab4 import lab4
 from lab5 import lab5
 from lab6 import lab6
 from lab7 import lab7
+from lab8 import lab8
 from rgz import rgz
 import datetime
 app = Flask(__name__)
@@ -19,6 +20,7 @@ app.register_blueprint(lab4)
 app.register_blueprint(lab5)
 app.register_blueprint(lab6)
 app.register_blueprint(lab7)
+app.register_blueprint(lab8)
 app.register_blueprint(rgz)
 # список логов
 access_log = []
@@ -157,6 +159,7 @@ def index():
             <a href="/lab5">Пятая лабораторная</a><br>
             <a href="/lab6">Шестая лабораторная</a><br>
             <a href="/lab7">Седьмая лабораторная</a><br>
+            <a href="/lab8">Восьмая лабораторная</a><br>
             <a href="/rgz">Планирование отпусков (РГЗ)</a><br>
         </nav>
         <footer>

@@ -3,6 +3,7 @@ from db import db
 from db.models import users, articles
 from flask_login import login_user, login_required, current_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
+from sqlalchemy import or_
 
 lab8 = Blueprint('lab8', __name__)
 
@@ -182,4 +183,29 @@ def toggle_favorite(article_id):
     db.session.commit()
     
     return redirect('/lab8/articles/')
+
+@lab8.route('/lab8/search', methods=['GET', 'POST'])
+def search_articles():
+    query = request.args.get('q', '')  # получаем строку поиска из GET-параметра
+
+    if current_user.is_authenticated:
+        my_id = current_user.id
+        # Поиск по своим + публичным статьям
+        results = articles.query.join(users, articles.login_id == users.id)\
+            .filter(
+                ((articles.login_id == my_id) | (articles.is_public == True)) &
+                (articles.title.ilike(f"%{query}%") | articles.article_text.ilike(f"%{query}%"))
+            )\
+            .order_by(articles.is_favorite.desc(), articles.id.desc()).all()
+    else:
+        # Неавторизованные пользователи: только публичные статьи
+        results = articles.query.join(users, articles.login_id == users.id)\
+            .filter(
+                (articles.is_public == True) &
+                (articles.title.ilike(f"%{query}%") | articles.article_text.ilike(f"%{query}%"))
+            )\
+            .order_by(articles.id.desc()).all()
+
+    return render_template('lab8/search_results.html', articles=results, query=query)
+
 

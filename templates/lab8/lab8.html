@@ -5,6 +5,12 @@
 {% block main %}
     <h1>Flask и БД</h1>
     <div>База знаний</div>
+
+    <form action="/lab8/search" method="get" style="margin-bottom:20px;">
+        <input type="text" name="q" placeholder="Поиск по статьям" value="{{ request.args.get('q', '') }}" style="padding:6px; width:250px;">
+        <button type="submit" style="padding:6px 12px; border-radius:5px; border:none; background:#4a76a8; color:#fff;">Найти</button>
+    </form>
+
     
     <div style="display: flex; flex-direction: column; min-height: 200px; margin-top: 20px;">
         <ul class="tab-list">

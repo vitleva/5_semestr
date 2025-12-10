@@ -25,7 +25,7 @@ login_manager.init_app(app)
 @login_manager.user_loader
 def load_users(login_id):
     return users.query.get(int(login_id))
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'секретно-секретный секрет')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'super-secret-key-12345')
 app.config['DB_TYPE'] = os.getenv('DB_TYPE', 'postgres')
 
 db_name = 'anastasia_vitleva_orm'

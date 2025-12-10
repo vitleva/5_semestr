@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block lab %}Редактировать статью{% endblock %}
+
+{% block main %}
+<h1>Редактировать статью</h1>
+
+<form action="/lab8/edit/{{ article.id }}" method="post" style="display:flex; flex-direction:column; gap:12px; max-width:700px;">
+    <label>
+        Заголовок:
+        <input type="text" name="title" value="{{ article.title }}" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc;">
+    </label>
+
+    <label>
+        Текст:
+        <textarea name="article_text" rows="8" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc;">{{ article.article_text }}</textarea>
+    </label>
+
+    <label style="display:flex; gap:10px; align-items:center;">
+        <input type="checkbox" name="is_public" {% if article.is_public %}checked{% endif %}>
+        Открытая (видна всем)
+    </label>
+
+    <label style="display:flex; gap:10px; align-items:center;">
+        <input type="checkbox" name="is_favorite" {% if article.is_favorite %}checked{% endif %}>
+        В избранное
+    </label>
+
+    <div>
+        <button type="submit" style="padding:10px 14px; background:#4a76a8; color:#fff; border:none; border-radius:6px;">Сохранить</button>
+        <a href="/lab8/articles/" style="margin-left:10px; color:#333; text-decoration:none;">Отмена</a>
+    </div>
+
+    {% if error %}
+    <p style="color:#d9534f;">{{ error }}</p>
+    {% endif %}
+</form>
+{% endblock %}

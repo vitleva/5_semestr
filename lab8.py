@@ -1,4 +1,4 @@
-from flask import Blueprint, session, render_template, request, redirect, current_app
+from flask import Blueprint, session, render_template, request, redirect, current_app, abort
 from db import db
 from db.models import users, articles
 from flask_login import login_user, login_required, current_user, logout_user
@@ -14,7 +14,6 @@ def lab():
 def register():
     if request.method == 'GET':
         return render_template('lab8/register.html')
-    
     
     login_form = request.form.get('login')
     password_form = request.form.get('password')
@@ -36,6 +35,10 @@ def register():
     new_user = users(login = login_form, password = password_hash)
     db.session.add(new_user)
     db.session.commit()
+
+    # Автоматический логин после регистрации
+    login_user(new_user, remember=False)
+
     return redirect('/lab8')
 
 @lab8.route('/lab8/login', methods = ['GET', 'POST'])
@@ -45,6 +48,7 @@ def login():
     
     login_form = request.form.get('login')
     password_form = request.form.get('password')
+    remember_form = request.form.get('remember')  # checkbox: 'on' если отмечено
 
     if not login_form:
         return render_template('lab8/login.html',
@@ -58,7 +62,8 @@ def login():
 
     if user:
         if check_password_hash(user.password, password_form):
-            login_user(user, remember = False)
+            remember_flag = True if remember_form == 'on' else False
+            login_user(user, remember = remember_flag)
             return redirect('/lab8')
     
     return render_template('/lab8/login.html', 
@@ -67,10 +72,96 @@ def login():
 @lab8.route('/lab8/articles/')
 @login_required
 def article_list():
-    return 'список статей'
+    # Сначала избранные, потом остальные
+    my_articles = articles.query.filter_by(login_id=current_user.id)\
+                                .order_by(articles.is_favorite.desc(), articles.id.desc()).all()
+    return render_template('lab8/articles.html', articles=my_articles)
+
+
+@lab8.route('/lab8/create', methods=['GET', 'POST'])
+@login_required
+def create_article():
+    if request.method == 'GET':
+        return render_template('lab8/create_article.html')
+
+    title = request.form.get('title')
+    text = request.form.get('article_text')
+    is_public = True if request.form.get('is_public') == 'on' else False
+    is_favorite = True if request.form.get('is_favorite') == 'on' else False
+
+    if not title:
+        return render_template('lab8/create_article.html', error='Заголовок не должен быть пустым')
+    if not text:
+        return render_template('lab8/create_article.html', error='Текст статьи не должен быть пустым')
+
+    new_article = articles(
+        login_id = current_user.id,
+        title = title,
+        article_text = text,
+        is_public = is_public,
+        is_favorite = is_favorite,
+        likes = 0
+    )
+    db.session.add(new_article)
+    db.session.commit()
+    return redirect('/lab8/articles/')
+
+@lab8.route('/lab8/edit/<int:article_id>', methods=['GET', 'POST'])
+@login_required
+def edit_article(article_id):
+    article = articles.query.get_or_404(article_id)
+
+    # доступ только владельцу
+    if article.login_id != current_user.id:
+        abort(403)
+
+    if request.method == 'GET':
+        return render_template('lab8/edit_article.html', article=article)
+
+    title = request.form.get('title')
+    text = request.form.get('article_text')
+    is_public = True if request.form.get('is_public') == 'on' else False
+    is_favorite = True if request.form.get('is_favorite') == 'on' else False
+
+    if not title:
+        return render_template('lab8/edit_article.html', article=article, error='Заголовок не должен быть пустым')
+    if not text:
+        return render_template('lab8/edit_article.html', article=article, error='Текст статьи не должен быть пустым')
+
+    article.title = title
+    article.article_text = text
+    article.is_public = is_public
+    article.is_favorite = is_favorite
+    db.session.commit()
+    return redirect('/lab8/articles/')
+
+@lab8.route('/lab8/delete/<int:article_id>', methods=['POST'])
+@login_required
+def delete_article(article_id):
+    article = articles.query.get_or_404(article_id)
+
+    # доступ только владельцу
+    if article.login_id != current_user.id:
+        abort(403)
+
+    db.session.delete(article)
+    db.session.commit()
+    return redirect('/lab8/articles/')
 
 @lab8.route('/lab8/logout')
 @login_required
 def logout():
     logout_user()
     return redirect('/lab8')
+
+@lab8.route('/lab8/toggle_favorite/<int:article_id>', methods=['POST'])
+@login_required
+def toggle_favorite(article_id):
+    article = articles.query.get_or_404(article_id)
+
+    if article.login_id != current_user.id:
+        abort(403)
+
+    article.is_favorite = not article.is_favorite
+    db.session.commit()
+    return redirect('/lab8/articles/')

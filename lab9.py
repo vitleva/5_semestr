@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template, request, session, current_app
+from flask import Blueprint, render_template, request, session, current_app, redirect
 import random
 import sqlite3
 from os import path
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from werkzeug.security import check_password_hash, generate_password_hash
 
 lab9 = Blueprint('lab9', __name__)
 
@@ -75,15 +76,11 @@ def db_connect():
         cur = conn.cursor(cursor_factory=RealDictCursor)
         return conn, cur
 
-    db_path = current_app.config.get('DB_PATH')
-    if not db_path:
-        db_path = path.join(current_app.root_path, "database.db")
-
+    db_path = current_app.config.get('DB_PATH') or path.join(current_app.root_path, "database.db")
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
     return conn, cur
-
 
 def db_close(conn, cur):
     try:
@@ -99,50 +96,117 @@ def db_close(conn, cur):
     except Exception:
         pass
 
+# --- Роуты авторизации ---
+@lab9.route('/lab9/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        login = request.form['login']
+        password = request.form['password']
+        conn, cur = db_connect()
+        try:
+            if current_app.config.get('DB_TYPE') == 'postgres':
+                cur.execute("SELECT * FROM users WHERE login = %s;", (login,))
+            else:
+                cur.execute("SELECT * FROM users WHERE login = ?;", (login,))
+            user = cur.fetchone()
+            if user and check_password_hash(user['password'], password):
+                session['login'] = login
+                return redirect('/lab9')
+            else:
+                error = "Неверный логин или пароль"
+        finally:
+            db_close(conn, cur)
+    return render_template('lab9/login.html', error=error)
 
-def init_boxes():
+@lab9.route('/lab9/register', methods=['GET', 'POST'])
+def register():
+    error = None
+    if request.method == 'POST':
+        login = request.form['login']
+        password = request.form['password']
+        if not login or not password:
+            error = "Заполните все поля"
+        else:
+            conn, cur = db_connect()
+            try:
+                if current_app.config.get('DB_TYPE') == 'postgres':
+                    cur.execute("SELECT id FROM users WHERE login = %s;", (login,))
+                else:
+                    cur.execute("SELECT id FROM users WHERE login = ?;", (login,))
+                if cur.fetchone():
+                    error = "Логин уже занят"
+                else:
+                    hashed = generate_password_hash(password)
+                    if current_app.config.get('DB_TYPE') == 'postgres':
+                        cur.execute("INSERT INTO users (login, password) VALUES (%s, %s);", (login, hashed))
+                    else:
+                        cur.execute("INSERT INTO users (login, password) VALUES (?, ?);", (login, hashed))
+                    session['login'] = login
+                    return redirect('/lab9')
+            finally:
+                db_close(conn, cur)
+    return render_template('lab9/register.html', error=error)
+
+# --- API открывания подарков ---
+@lab9.route('/lab9/api/open', methods=['POST'])
+def open_box():
+    data = request.get_json()
+    box_id = data.get('id')
+    if session.get('opened_count', 0) >= MAX_OPENED: 
+        return {'error': 'Можно открыть не более 3 коробок'}, 403
+
     conn, cur = db_connect()
     try:
-        cur.execute("SELECT COUNT(*) as cnt FROM gift_boxes;")
-        if cur.fetchone()['cnt'] == 0:
+        if current_app.config.get('DB_TYPE') == 'postgres':
+            cur.execute("SELECT * FROM gift_boxes WHERE id = %s;", (box_id,))
+        else:
+            cur.execute("SELECT * FROM gift_boxes WHERE id = ?;", (box_id,))
+        box = cur.fetchone()
+        if not box:
+            return {'error': 'Коробка не найдена'}, 404
 
-            greetings = GREETINGS.copy()
-            gifts = GIFT_IMAGES.copy()
-            boxes = BOX_IMAGES.copy()
+        restricted = bool(box.get('restricted', False))
+        if restricted and 'login' not in session:
+            return {'error': 'Только для авторизованных пользователей'}, 403
 
-            for i in range(TOTAL_BOXES):
-                x, y = BOX_POSITIONS[i]
-                if current_app.config.get('DB_TYPE') == 'postgres':
-                    cur.execute("""
-                        INSERT INTO gift_boxes (x, y, greeting, gift_image, box_image)
-                        VALUES (%s, %s, %s, %s, %s);
-                    """, (
-                        x,
-                        y,
-                        greetings[i],
-                        gifts[i],
-                        boxes[i]
-                    ))
-                else:
-                    cur.execute("""
-                        INSERT INTO gift_boxes (x, y, greeting, gift_image, box_image)
-                        VALUES (?, ?, ?, ?, ?);
-                    """, (
-                        x,
-                        y,
-                        greetings[i],
-                        gifts[i],
-                        boxes[i]
-                    ))
+        if box['opened']:
+            return {'error': 'Коробка уже пуста'}, 400
 
+        if current_app.config.get('DB_TYPE') == 'postgres':
+            cur.execute("UPDATE gift_boxes SET opened = 1 WHERE id = %s;", (box_id,))
+        else:
+            cur.execute("UPDATE gift_boxes SET opened = 1 WHERE id = ?;", (box_id,))
     finally:
         db_close(conn, cur)
 
+    session['opened_count'] = session.get('opened_count', 0) + 1
+    return {
+        'greeting': box['greeting'],
+        'gift_image': box['gift_image'],
+        'opened_count': session['opened_count']
+    }
 
+# --- API перезаполнения всех коробок ---
+@lab9.route('/lab9/api/refill', methods=['POST'])
+def refill_boxes():
+    if 'login' not in session:
+        return {'success': False, 'error': 'Только для авторизованных'}
+
+    conn, cur = db_connect()
+    try:
+        if current_app.config.get('DB_TYPE') == 'postgres':
+            cur.execute("UPDATE gift_boxes SET opened = 0;")
+        else:
+            cur.execute("UPDATE gift_boxes SET opened = 0;")
+    finally:
+        db_close(conn, cur)
+    session['opened_count'] = 0
+    return {'success': True}
+
+# --- Главная страница ---
 @lab9.route('/lab9')
 def main():
-    init_boxes()
-
     if 'opened_count' not in session:
         session['opened_count'] = 0
 
@@ -162,39 +226,7 @@ def main():
         opened_count=session['opened_count']
     )
 
-
-@lab9.route('/lab9/api/open', methods=['POST'])
-def open_box():
-    data = request.get_json()
-    box_id = data.get('id')
-
-    if session.get('opened_count', 0) >= MAX_OPENED:
-        return {'error': 'Можно открыть не более 3 коробок'}, 403
-
-    conn, cur = db_connect()
-    try:
-        if current_app.config.get('DB_TYPE') == 'postgres':
-            cur.execute("SELECT * FROM gift_boxes WHERE id = %s;", (box_id,))
-        else:
-            cur.execute("SELECT * FROM gift_boxes WHERE id = ?;", (box_id,))
-
-        box = cur.fetchone()
-
-        if not box or box['opened']:
-            return {'error': 'Коробка уже пуста'}, 400
-
-        if current_app.config.get('DB_TYPE') == 'postgres':
-            cur.execute("UPDATE gift_boxes SET opened = 1 WHERE id = %s;", (box_id,))
-        else:
-            cur.execute("UPDATE gift_boxes SET opened = 1 WHERE id = ?;", (box_id,))
-
-    finally:
-        db_close(conn, cur)
-
-    session['opened_count'] += 1
-
-    return {
-        'greeting': box['greeting'],
-        'gift_image': box['gift_image'],
-        'opened_count': session['opened_count']
-    }
+@lab9.route('/lab9/logout')
+def logout():
+    session.pop('login', None)
+    return redirect('/lab9')

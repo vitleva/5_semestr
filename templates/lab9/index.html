@@ -42,7 +42,7 @@
         filter: drop-shadow(0 0 10px gold);
     }
 
-    .box.opened {
+    .box.opened, .box.restricted-locked {
         opacity: 0.35;
         filter: grayscale(100%);
         transform: none;
@@ -72,27 +72,66 @@
         text-align: center;
         max-width: 90%;
     }
-    </style>
-    <img
-            src="/static/lab9/lights.png"
-            style="width: 15%; margin: auto; display: block;"
-        >
 
+    #santa-button {
+        display: block;
+        margin: 20px auto;
+        padding: 10px 20px;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+    #santa-button.disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+
+    #note {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 0.95em;
+        color: #555;
+    }
+    #note a {
+        color: #3498db;
+        text-decoration: none;
+    }
+    #note a:hover {
+        text-decoration: underline;
+    }
+    </style>
+
+    <img src="/static/lab9/lights.png" style="width: 15%; margin: auto; display: block;">
     <h1>🎁 Новогодние поздравления 🎁</h1>
+
+    <div style="text-align:center; margin-bottom:15px;">
+        {% if session.login %}
+            <span>Привет, {{ session.login }}!</span>
+        {% else %}
+            <a href="/lab9/login">Войти</a> | <a href="/lab9/register">Регистрация</a>
+        {% endif %}
+    </div>
 
     <div id="counter">
         Осталось неоткрытых коробок: {{ unopened }}<br>
         Открыто вами: {{ opened_count }} / 3
     </div>
 
+    {% if session.login %}
+        <button id="santa-button">🎅 Дед Мороз</button>
+    {% else %}
+        <button id="santa-button" class="disabled" disabled>🎅 Для использования авторизуйтесь</button>
+    {% endif %}
+
     <div id="field">
     {% for box in boxes %}
-        <img
-            src="{{ box.box_image }}"
-            class="box {% if box.opened %}opened{% endif %}"
+        <img src="{{ box.box_image }}"
+            class="box {% if box.opened %}opened{% endif %} {% if box.restricted and not session.login %}restricted-locked{% endif %}"
             style="left: {{ box.x }}%; top: {{ box.y }}%;"
             data-id="{{ box.id }}"
-        >
+            data-restricted="{{ 1 if box.restricted else 0 }}">
     {% endfor %}
     </div>
 
@@ -105,6 +144,23 @@
         </div>
     </div>
 
+    {% if session.get('login') %}
+        <div id="note" style="text-align:center; margin-top:15px;">
+            <form action="{{ url_for('lab9.logout') }}" method="get">
+                <button type="submit" style="padding:8px 15px; background:#4a76a8; color:white; border:none; border-radius:6px; cursor:pointer;">
+                    Выйти
+                </button>
+            </form>
+        </div>
+    {% else %}
+        <div id="note" style="text-align:center; margin-top:15px;">
+            Чтобы разблокировать все подарки — 
+            <a href="{{ url_for('lab9.login') }}">авторизуйтесь</a> или 
+            <a href="{{ url_for('lab9.register') }}">зарегистрируйтесь</a>.
+        </div>
+    {% endif %}
+
+
     <script>
     const totalBoxes = {{ boxes|length }};
 
@@ -114,12 +170,13 @@
         const angle = (id * 13 % 21) - 10;
         box.style.setProperty('--angle', angle + 'deg');
 
-        // навешиваем обработчик на каждую коробку
-        box.addEventListener('click', () => openBox(box));
+        if (!box.classList.contains('opened') && !box.classList.contains('restricted-locked')) {
+            box.addEventListener('click', () => openBox(box));
+        }
     });
 
     function openBox(box) {
-        if (box.classList.contains('opened')) return;
+        if (box.classList.contains('opened') || box.classList.contains('restricted-locked')) return;
 
         fetch('/lab9/api/open', {
             method: 'POST',
@@ -138,15 +195,28 @@
             document.getElementById('gift').src = data.gift_image;
             document.getElementById('modal').style.display = 'flex';
 
-            // Обновляем счётчик сразу
             const counterEl = document.getElementById('counter');
             counterEl.innerHTML = `Осталось неоткрытых коробок: ${totalBoxes - data.opened_count}<br>
-                                   Открыто вами: ${data.opened_count} / 3`;
+                                Открыто вами: ${data.opened_count} / 3`;
         });
     }
 
     function closeModal() {
         document.getElementById('modal').style.display = 'none';
     }
+
+    {% if session.login %}
+    document.getElementById('santa-button').addEventListener('click', () => {
+        fetch('/lab9/api/refill', {method:'POST'})
+        .then(r => r.json())
+        .then(data => {
+            if(data.success){
+                location.reload();
+            } else {
+                alert('Ошибка!');
+            }
+        });
+    });
+    {% endif %}
     </script>
 {% endblock %}

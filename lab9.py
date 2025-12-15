@@ -96,7 +96,23 @@ def db_close(conn, cur):
     except Exception:
         pass
 
-# --- Роуты авторизации ---
+def init_boxes(): 
+    conn, cur = db_connect() 
+    try: 
+        cur.execute("SELECT COUNT(*) as cnt FROM gift_boxes;") 
+        if cur.fetchone()['cnt'] == 0: 
+            greetings = GREETINGS.copy() 
+            gifts = GIFT_IMAGES.copy() 
+            boxes = BOX_IMAGES.copy() 
+            for i in range(TOTAL_BOXES): 
+                x, y = BOX_POSITIONS[i] 
+                if current_app.config.get('DB_TYPE') == 'postgres': 
+                    cur.execute(""" INSERT INTO gift_boxes (x, y, greeting, gift_image, box_image) VALUES (%s, %s, %s, %s, %s); """, 
+                                ( x, y, greetings[i], gifts[i], boxes[i] )) 
+                else: cur.execute(""" INSERT INTO gift_boxes (x, y, greeting, gift_image, box_image) VALUES (?, ?, ?, ?, ?); """, 
+                                  ( x, y, greetings[i], gifts[i], boxes[i] )) 
+    finally: db_close(conn, cur)
+
 @lab9.route('/lab9/login', methods=['GET', 'POST'])
 def login():
     error = None
@@ -148,7 +164,6 @@ def register():
                 db_close(conn, cur)
     return render_template('lab9/register.html', error=error)
 
-# --- API открывания подарков ---
 @lab9.route('/lab9/api/open', methods=['POST'])
 def open_box():
     data = request.get_json()
@@ -187,7 +202,6 @@ def open_box():
         'opened_count': session['opened_count']
     }
 
-# --- API перезаполнения всех коробок ---
 @lab9.route('/lab9/api/refill', methods=['POST'])
 def refill_boxes():
     if 'login' not in session:
@@ -204,9 +218,9 @@ def refill_boxes():
     session['opened_count'] = 0
     return {'success': True}
 
-# --- Главная страница ---
 @lab9.route('/lab9')
 def main():
+    init_boxes()
     if 'opened_count' not in session:
         session['opened_count'] = 0
 

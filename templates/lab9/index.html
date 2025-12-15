@@ -2,8 +2,151 @@
 
 {% block lab %}Лабораторная работа 9{% endblock %}
 
-{% block script %}{% endblock %}
-
 {% block main %}
-    <h1>Поздравления</h1>
+    <style>
+    h1 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 10px;
+    }
+
+    #counter {
+        text-align: center;
+        color: #34495e;
+        font-size: 1.1em;
+        margin-bottom: 15px;
+    }
+
+    #field {
+        position: relative;
+        width: 70%;
+        height: 550px;
+        background: #f8f9fa;
+        border-radius: 15px;
+        border: 2px dashed #cfd8dc;
+        margin: auto;
+    }
+
+    .box {
+        position: absolute;
+        width: 170px;
+        object-fit: contain;
+        cursor: pointer;
+        --angle: 0deg;
+        transform: rotate(var(--angle));
+        transition: transform 0.3s, filter 0.3s;
+    }
+
+    .box:hover {
+        transform: rotate(var(--angle)) scale(1.15);
+        filter: drop-shadow(0 0 10px gold);
+    }
+
+    .box.opened {
+        opacity: 0.35;
+        filter: grayscale(100%);
+        transform: none;
+        cursor: default;
+    }
+
+    .gift {
+        width: 350px;
+        display: block;
+        margin: 10px auto 0;
+    }
+
+    #modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.7);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    #modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 20px;
+        text-align: center;
+        max-width: 90%;
+    }
+    </style>
+    <img
+            src="/static/lab9/lights.png"
+            style="width: 15%; margin: auto; display: block;"
+        >
+
+    <h1>🎁 Новогодние поздравления 🎁</h1>
+
+    <div id="counter">
+        Осталось неоткрытых коробок: {{ unopened }}<br>
+        Открыто вами: {{ opened_count }} / 3
+    </div>
+
+    <div id="field">
+    {% for box in boxes %}
+        <img
+            src="{{ box.box_image }}"
+            class="box {% if box.opened %}opened{% endif %}"
+            style="left: {{ box.x }}%; top: {{ box.y }}%;"
+            data-id="{{ box.id }}"
+        >
+    {% endfor %}
+    </div>
+
+    <div id="modal">
+        <div id="modal-content">
+            <h2 id="greeting"></h2>
+            <img id="gift" class="gift">
+            <br><br>
+            <button onclick="closeModal()">Закрыть</button>
+        </div>
+    </div>
+
+    <script>
+    const totalBoxes = {{ boxes|length }};
+
+    // Установка фиксированного угла для каждой коробки
+    document.querySelectorAll('.box').forEach(box => {
+        const id = parseInt(box.dataset.id);
+        const angle = (id * 13 % 21) - 10;
+        box.style.setProperty('--angle', angle + 'deg');
+
+        // навешиваем обработчик на каждую коробку
+        box.addEventListener('click', () => openBox(box));
+    });
+
+    function openBox(box) {
+        if (box.classList.contains('opened')) return;
+
+        fetch('/lab9/api/open', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({id: box.dataset.id})
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            box.classList.add('opened');
+            document.getElementById('greeting').innerText = data.greeting;
+            document.getElementById('gift').src = data.gift_image;
+            document.getElementById('modal').style.display = 'flex';
+
+            // Обновляем счётчик сразу
+            const counterEl = document.getElementById('counter');
+            counterEl.innerHTML = `Осталось неоткрытых коробок: ${totalBoxes - data.opened_count}<br>
+                                   Открыто вами: ${data.opened_count} / 3`;
+        });
+    }
+
+    function closeModal() {
+        document.getElementById('modal').style.display = 'none';
+    }
+    </script>
 {% endblock %}
